@@ -37,7 +37,7 @@
 ## 1.2 Pregled in čiščenje podatkov
 
 Čeprav v opisu podatkovne baze piše da je očiščena, sva se odločila da podatke tudi midva preveriva. 
-Vse korake, izpise in preveritve sva dokumentirala v Python zvezku: 1_2_pregled_in_ciscenje.ipynb.
+Vse korake, izpise in preveritve sva dokumentirala v Python zvezku: `1_2_pregled_in_ciscenje.ipynb`.
 
 ### Preverjanje manjkajočih vrednosti (NA)
 - Preverila sva manjkajoče vrednosti po vseh spremenljivkah.
@@ -51,12 +51,12 @@ prosim editaj to v lepo markdown notacijo
 ### Preverjanje ekstremnih vrednosti (outliers)
 - Pregledala sva razpone numeričnih spremenljivk (min/max) in porazdelitve.
 - Rezultat (min–max):
-- Height_(cm): 91 – 241
-- Weight_(kg): 24.95 – 293.02
-- BMI: 12.02 – 99.33
-- Alcohol_Consumption: 0 – 30
-- Fruit_Consumption: 0 – 120
-- Green_Vegetables_Consumption: 0 – 128
-- FriedPotato_Consumption: 0 – 128
-- *Odločitev*: *ekstremnih vrednosti ne odstranjujeva*, ker so lahko realne (npr. zelo visok BMI ali teža) in lahko pomembno vplivajo na raziskovanje in napovedovanje tveganj. Namesto odstranjevanja ekstremne zapise označiva (flag) za kasnejšo robustno primerjavo 
-modelov.
+- Height_(cm): `91 – 241`
+- Weight_(kg): `24.95 – 293.02`
+- BMI: `12.02 – 99.33`
+- Alcohol_Consumption: `0 – 30`
+- Fruit_Consumption: `0 – 120`
+- Green_Vegetables_Consumption: `0 – 128`
+- FriedPotato_Consumption: `0 – 128`
+- *Odločitev*: *ekstremnih vrednosti ne odstranjujeva*, ker so lahko realne (npr. zelo visok BMI ali teža) in lahko pomembno vplivajo na raziskovanje in napovedovanje tveganj.
+
