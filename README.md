@@ -1,5 +1,5 @@
 # Seminarska naloga – Celovita podatkovna analiza in optimizacija procesa 
-
+---
 ## 1.1 Izbor podatkov
 - Izbrana *javno dostopna* baza podatkov
 - Za seminarsko nalogo sva izbrala javno dostopno bazo podatkov iz Kaggle:
@@ -33,3 +33,30 @@
 | **Fruit_Consumption**            | **Uživanje sadja**                  | Pogostost uživanja sadja (številčno kodirano).                     | numerična (diskretna)    | vrednosti **0–120**                                                                                          |
 | **Green_Vegetables_Consumption** | **Uživanje zelene zelenjave**       | Pogostost uživanja zelene zelenjave (številčno kodirano).          | numerična (diskretna)    | vrednosti **0–128**                                                                                          |
 | **FriedPotato_Consumption**      | **Uživanje ocvrtega krompirja**     | Pogostost uživanja ocvrtih krompirjevih jedi (številčno kodirano). | numerična (diskretna)    | vrednosti **0–128**                                                                                          |
+---
+## 1.2 Pregled in čiščenje podatkov
+
+Čeprav v opisu podatkovne baze piše da je očiščena, sva se odločila da podatke tudi midva preveriva. 
+Vse korake, izpise in preveritve sva dokumentirala v Python zvezku: 1_2_pregled_in_ciscenje.ipynb.
+
+### Preverjanje manjkajočih vrednosti (NA)
+- Preverila sva manjkajoče vrednosti po vseh spremenljivkah.
+- *Rezultat*: skupno število manjkajočih vrednosti je *0*.
+- *Odločitev*: ker manjkajočih vrednosti ni, *nadomeščanje ni potrebno*.
+### Preverjanje podvojenih zapisov (duplikati)
+- Preverila sva popolne duplikate vrstic, kar pomeni: vrstica je identična drugi vrstici v vseh 19 stolpcih (ne gre za “ponavljanje” v enem stolpcu, ampak za 100% enak zapis).
+- *Rezultat*: 80 ponovitev (tj. ponovitve po prvem pojavu)
+- *Odločitev*: *duplikatov ne odstranjujeva*, ker nabor nima identifikatorja posameznika (ID) in gre za anketne podatke — popolnoma enaki odgovori so zato lahko realni in predstavljajo različne osebe z enakimi karakteristikami.
+prosim editaj to v lepo markdown notacijo
+### Preverjanje ekstremnih vrednosti (outliers)
+- Pregledala sva razpone numeričnih spremenljivk (min/max) in porazdelitve.
+- Rezultat (min–max):
+- Height_(cm): 91 – 241
+- Weight_(kg): 24.95 – 293.02
+- BMI: 12.02 – 99.33
+- Alcohol_Consumption: 0 – 30
+- Fruit_Consumption: 0 – 120
+- Green_Vegetables_Consumption: 0 – 128
+- FriedPotato_Consumption: 0 – 128
+- *Odločitev*: *ekstremnih vrednosti ne odstranjujeva*, ker so lahko realne (npr. zelo visok BMI ali teža) in lahko pomembno vplivajo na raziskovanje in napovedovanje tveganj. Namesto odstranjevanja ekstremne zapise označiva (flag) za kasnejšo robustno primerjavo 
+modelov.
