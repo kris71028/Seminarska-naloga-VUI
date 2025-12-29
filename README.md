@@ -69,7 +69,7 @@ Za vsako spremenljivko sva pripravila:
 - kratko interpretacijo opažanj (porazdelitve, odstopanja, posebnosti).
 
 Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_statistika_grafi.ipynb`.
-### 1.3 Grafi (avtomatsko generirano)
+### Grafi (avtomatsko generirano)
 
 #### Height_(cm)
 
@@ -160,4 +160,5 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
 #### Smoking_History
 
 ![Deleži Smoking_History](figures/1_3/bar_Smoking_History.png)
+
 
