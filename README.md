@@ -142,6 +142,4 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
   </tr>
 </table>
 
-
-
-
+# od 1.4 naprej mora bit ločeno za regresijo pa klasifikacijo :Đ
