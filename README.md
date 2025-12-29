@@ -71,94 +71,77 @@ Za vsako spremenljivko sva pripravila:
 Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_statistika_grafi.ipynb`.
 ### Grafi (avtomatsko generirano)
 
-#### Height_(cm)
+### Numerične spremenljivke (histogram + boxplot)
 
-![Histogram Height_(cm)](figures/1_3/hist_Height_cm.png)
+<table>
+  <tr>
+    <td align="center"><b>Height_(cm)</b><br>
+      <img src="figures/1_3/hist_Height_cm.png" width="360"><br>
+      <img src="figures/1_3/box_Height_cm.png" width="360">
+    </td>
+    <td align="center"><b>Weight_(kg)</b><br>
+      <img src="figures/1_3/hist_Weight_kg.png" width="360"><br>
+      <img src="figures/1_3/box_Weight_kg.png" width="360">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>BMI</b><br>
+      <img src="figures/1_3/hist_BMI.png" width="360"><br>
+      <img src="figures/1_3/box_BMI.png" width="360">
+    </td>
+    <td align="center"><b>Alcohol_Consumption</b><br>
+      <img src="figures/1_3/hist_Alcohol_Consumption.png" width="360"><br>
+      <img src="figures/1_3/box_Alcohol_Consumption.png" width="360">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Fruit_Consumption</b><br>
+      <img src="figures/1_3/hist_Fruit_Consumption.png" width="360"><br>
+      <img src="figures/1_3/box_Fruit_Consumption.png" width="360">
+    </td>
+    <td align="center"><b>Green_Vegetables_Consumption</b><br>
+      <img src="figures/1_3/hist_Green_Vegetables_Consumption.png" width="360"><br>
+      <img src="figures/1_3/box_Green_Vegetables_Consumption.png" width="360">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>FriedPotato_Consumption</b><br>
+      <img src="figures/1_3/hist_FriedPotato_Consumption.png" width="360"><br>
+      <img src="figures/1_3/box_FriedPotato_Consumption.png" width="360">
+    </td>
+    <td></td>
+  </tr>
+</table>
 
-![Boxplot Height_(cm)](figures/1_3/box_Height_cm.png)
+### Kategorialne spremenljivke (barplot deležev)
 
-#### Weight_(kg)
+<table>
+  <tr>
+    <td align="center"><b>General_Health</b><br><img src="figures/1_3/bar_General_Health.png" width="360"></td>
+    <td align="center"><b>Checkup</b><br><img src="figures/1_3/bar_Checkup.png" width="360"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Exercise</b><br><img src="figures/1_3/bar_Exercise.png" width="360"></td>
+    <td align="center"><b>Heart_Disease</b><br><img src="figures/1_3/bar_Heart_Disease.png" width="360"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Skin_Cancer</b><br><img src="figures/1_3/bar_Skin_Cancer.png" width="360"></td>
+    <td align="center"><b>Other_Cancer</b><br><img src="figures/1_3/bar_Other_Cancer.png" width="360"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Depression</b><br><img src="figures/1_3/bar_Depression.png" width="360"></td>
+    <td align="center"><b>Diabetes</b><br><img src="figures/1_3/bar_Diabetes.png" width="360"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Arthritis</b><br><img src="figures/1_3/bar_Arthritis.png" width="360"></td>
+    <td align="center"><b>Sex</b><br><img src="figures/1_3/bar_Sex.png" width="360"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Age_Category</b><br><img src="figures/1_3/bar_Age_Category.png" width="360"></td>
+    <td align="center"><b>Smoking_History</b><br><img src="figures/1_3/bar_Smoking_History.png" width="360"></td>
+  </tr>
+</table>
 
-![Histogram Weight_(kg)](figures/1_3/hist_Weight_kg.png)
 
-![Boxplot Weight_(kg)](figures/1_3/box_Weight_kg.png)
-
-#### BMI
-
-![Histogram BMI](figures/1_3/hist_BMI.png)
-
-![Boxplot BMI](figures/1_3/box_BMI.png)
-
-#### Alcohol_Consumption
-
-![Histogram Alcohol_Consumption](figures/1_3/hist_Alcohol_Consumption.png)
-
-![Boxplot Alcohol_Consumption](figures/1_3/box_Alcohol_Consumption.png)
-
-#### Fruit_Consumption
-
-![Histogram Fruit_Consumption](figures/1_3/hist_Fruit_Consumption.png)
-
-![Boxplot Fruit_Consumption](figures/1_3/box_Fruit_Consumption.png)
-
-#### Green_Vegetables_Consumption
-
-![Histogram Green_Vegetables_Consumption](figures/1_3/hist_Green_Vegetables_Consumption.png)
-
-![Boxplot Green_Vegetables_Consumption](figures/1_3/box_Green_Vegetables_Consumption.png)
-
-#### FriedPotato_Consumption
-
-![Histogram FriedPotato_Consumption](figures/1_3/hist_FriedPotato_Consumption.png)
-
-![Boxplot FriedPotato_Consumption](figures/1_3/box_FriedPotato_Consumption.png)
-
-#### General_Health
-
-![Deleži General_Health](figures/1_3/bar_General_Health.png)
-
-#### Checkup
-
-![Deleži Checkup](figures/1_3/bar_Checkup.png)
-
-#### Exercise
-
-![Deleži Exercise](figures/1_3/bar_Exercise.png)
-
-#### Heart_Disease
-
-![Deleži Heart_Disease](figures/1_3/bar_Heart_Disease.png)
-
-#### Skin_Cancer
-
-![Deleži Skin_Cancer](figures/1_3/bar_Skin_Cancer.png)
-
-#### Other_Cancer
-
-![Deleži Other_Cancer](figures/1_3/bar_Other_Cancer.png)
-
-#### Depression
-
-![Deleži Depression](figures/1_3/bar_Depression.png)
-
-#### Diabetes
-
-![Deleži Diabetes](figures/1_3/bar_Diabetes.png)
-
-#### Arthritis
-
-![Deleži Arthritis](figures/1_3/bar_Arthritis.png)
-
-#### Sex
-
-![Deleži Sex](figures/1_3/bar_Sex.png)
-
-#### Age_Category
-
-![Deleži Age_Category](figures/1_3/bar_Age_Category.png)
-
-#### Smoking_History
-
-![Deleži Smoking_History](figures/1_3/bar_Smoking_History.png)
 
 
