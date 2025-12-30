@@ -219,3 +219,7 @@ Pri metriki **F1** pa se pojavijo večje razlike, kar je pričakovano, ker je **
 **LogisticRegression** ima najvišji AUC, vendar zelo nizko **Sensitivity** (≈ 0.061) in posledično zelo nizek **F1** (≈ 0.109). To kaže, da model pri izbranem pragu klasifikacije skoraj nikogar ne označi kot pozitivnega (visoka Specificity, veliko FN).
 
 **RandomForest** in **ExtraTrees** imata nekoliko nižji AUC, vendar bistveno boljši **F1** (≈ 0.33) ter višjo **Sensitivity**, kar je pogosto bolj uporabno v zdravstvenem kontekstu, kjer želimo zaznati čim več pozitivnih primerov.
+
+# NEED TO ADD COMMENTS TO THE TABLE !!!!!!!!! 
+# !!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!
