@@ -143,7 +143,52 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
 </table>
 ---
 
-# od 1.4 naprej mora bit ločeno za regresijo pa klasifikacijo :Đ
+## 1.4 Bivariatna analiza (KLASIFIKACIJA: Heart_Disease)
+
+V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke X** z odvisno spremenljivko **Heart_Disease (Yes/No)**. Cilj je:
+- razumeti, **katere spremenljivke so najbolj povezane** s pojavnostjo srčne bolezni,
+- dobiti **interpretabilne rezultate** (učinek + grafi),
+- dobiti osnovo za nadaljnji korak **1.5 (feature selection)** in kasnejše modeliranje.
+
+### Uporabljeni statistični testi (izbor po tipu spremenljivk)
+
+**Numerične spremenljivke (X numerična, Y binarna):**
+- preverjanje normalnosti porazdelitve po skupinah (Yes/No),
+- preverjanje enakosti varianc (Levenov test),
+- nato:
+  - **Studentov t-test** (normalnost + enake variance),
+  - **Welchov t-test** (normalnost + neenake variance),
+  - **Mann–Whitney U** (če normalnost ni izpolnjena).
+
+**Kategorialne spremenljivke (X kategorialna, Y binarna):**
+- **χ² test neodvisnosti**,
+- če je tabela **2×2** in so pričakovane frekvence **< 5**, uporabiva **Fisherjev eksaktni test**.
+
+Ker je vzorec zelo velik, so p-vrednosti pogosto zelo majhne (**p < 0.001**), zato za realno pomembnost upoštevava tudi **mere učinka**:
+- **Cramérjev V** (kategorialne spremenljivke),
+- **Cohenov d** ali **rank-biserial r** (numerične spremenljivke).
+
+### TOP povezave (po meri učinka)
+
+Spodaj je prikaz najmočnejših povezav med X in Heart_Disease (povzetek iz skupne tabele):
+
+| X | Tip X | Test | p | Mera učinka | Učinek |
+|---|---|---|---|---|---|
+| General_Health | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.251 |
+| Age_Category | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.242 |
+| Diabetes | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.184 |
+| Arthritis | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.158 |
+| Exercise | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.153 |
+| Alcohol_Consumption | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | -0.152 |
+| Smoking_History | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.139 |
+| Weight_(kg) | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | 0.109 |
+| BMI | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | 0.107 |
+| Checkup | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.102 |
+
+**Interpretacija (v kontekstu procesa):**
+- Najmočnejše povezave s srčno boleznijo so pri **General_Health** in **Age_Category** (največji Cramérjev V) → slabše splošno zdravje in višja starostna skupina sta povezana z višjo pojavnostjo Heart_Disease.
+- Pomembne povezave imajo tudi **Diabetes**, **Arthritis**, **Exercise** in **Smoking_History**, kar je smiselno glede na znane dejavnike tveganja.
+- Pri numeričnih spremenljivkah so razlike statistično značilne, vendar so učinki večinoma manjši (npr. Heart_Disease=Yes ima višji BMI/težo). Pri tako velikem N je zato bolj pomembno gledati **velikost učinka** in ne samo p-vrednost.
 
 ---
 
@@ -223,3 +268,4 @@ Pri metriki **F1** pa se pojavijo večje razlike, kar je pričakovano, ker je **
 # NEED TO ADD COMMENTS TO THE TABLE !!!!!!!!! 
 # !!!!!!!!!!!!!!!!
 # !!!!!!!!!!!!!!!!!!!!!!
+
