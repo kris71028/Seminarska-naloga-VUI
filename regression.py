@@ -274,82 +274,101 @@ def cv_rmse_linear(df, features, n_splits=3):
 
     return np.mean(rmses), np.std(rmses)
 
+from joblib import dump
+from sklearn.pipeline import Pipeline
 
 def compare_models(df, features=None):
+    save_dir="models"
+    import os
+    os.makedirs(save_dir, exist_ok=True)
+
     comparison = []
 
-    # -------- Linear Regression --------
+    # ---------------- Linear Regression (no saving) ----------------
     rmse_mean, rmse_std = cv_rmse_linear(df, features)
     _, _, _, _, r2 = run_linear(df, features)
     comparison.append([
         "Linear Regression",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        "-"  # No hyperparameters
+        "-"
     ])
 
-    # -------- Ridge Regression --------
-    ridge_alpha = 1.0
-    _, _, rmse_mean, rmse_std, r2 = run_ridge(df, features=features)
+    # ---------------- Ridge Regression (SAVE) ----------------
+    X = df[features].dropna()
+    y = df.loc[X.index, target_feature]
+
+    ridge_pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("ridge", Ridge(alpha=1.0))
+    ])
+    ridge_pipeline.fit(X, y)
+
+    rmse_mean, rmse_std = cv_rmse(ridge_pipeline, X, y)
+    r2 = ridge_pipeline.score(X, y)
+
+    dump(ridge_pipeline, f"{save_dir}/ridge_model.joblib")
+
     comparison.append([
         "Ridge Regression",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        f"alpha={ridge_alpha}"
+        "alpha=1.0 [SAVED]"
     ])
 
-    # -------- Random Forest --------
-    rf_n_estimators = 50
-    rf_max_depth = 3
+    # ---------------- Random Forest (not saved) ----------------
     _, _, rmse_mean, rmse_std, r2 = run_random_forest(
-        df, n_estimators=rf_n_estimators, max_depth=rf_max_depth, features=features
+        df, n_estimators=50, max_depth=3, features=features
     )
+
     comparison.append([
         "Random Forest",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        f"n_estimators={rf_n_estimators}, max_depth={rf_max_depth}"
+        "n_estimators=50, max_depth=3"
     ])
 
-    # -------- Gradient Boosting --------
-    gb_n_estimators = 50
-    gb_max_depth = 3
-    _, _, rmse_mean, rmse_std, r2 = run_gradient_boosting(
-        df, n_estimators=gb_n_estimators, max_depth=gb_max_depth, features=features
+    # ---------------- Gradient Boosting (SAVE) ----------------
+    gb_model, _, rmse_mean, rmse_std, r2 = run_gradient_boosting(
+        df, n_estimators=50, max_depth=3, features=features
     )
+
+    dump(gb_model, f"{save_dir}/gradient_boosting_model.joblib")
+
     comparison.append([
         "Gradient Boosting",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        f"n_estimators={gb_n_estimators}, max_depth={gb_max_depth}"
+        "n_estimators=50, max_depth=3 [SAVED]"
     ])
 
-    # -------- XGBoost --------
-    xgb_n_estimators = 100
-    xgb_max_depth = 5
-    _, _, rmse_mean, rmse_std, r2 = run_xgboost(
-        df, n_estimators=xgb_n_estimators, max_depth=xgb_max_depth, features=features
+    # ---------------- XGBoost (SAVE) ----------------
+    xgb_model, _, rmse_mean, rmse_std, r2 = run_xgboost(
+        df, n_estimators=100, max_depth=5, features=features
     )
+
+    dump(xgb_model, f"{save_dir}/xgboost_model.joblib")
+
     comparison.append([
         "XGBoost",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        f"n_estimators={xgb_n_estimators}, max_depth={xgb_max_depth}"
+        "n_estimators=100, max_depth=5 [SAVED]"
     ])
 
-    # -------- Create DataFrame and sort by RMSE mean --------
+    # ---------------- Create table ----------------
     df_comparison = pd.DataFrame(
         comparison,
         columns=["Model", "RMSE (CV mean ± std)", "R²", "Parameters"]
     )
 
-    # Sort by RMSE mean
     df_comparison = df_comparison.sort_values(
         by="RMSE (CV mean ± std)",
         key=lambda s: s.str.split(" ± ").str[0].astype(float)
     )
 
     return df_comparison
+
 
 def spearman_correlation(df, features):
     data = df[features + ["BMI"]].dropna()
@@ -433,5 +452,3 @@ def plot_correlation(df, features):
 
     plt.tight_layout()
     plt.show()
-
-
