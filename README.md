@@ -141,54 +141,70 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
     <td align="center"><b>Smoking_History</b><br><img src="figures/1_3/bar_Smoking_History.png" width="360"></td>
   </tr>
 </table>
----
 
+--- 
 ## 1.4 Bivariatna analiza (KLASIFIKACIJA: Heart_Disease)
 
-V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke X** z odvisno spremenljivko **Heart_Disease (Yes/No)**. Cilj je:
-- razumeti, **katere spremenljivke so najbolj povezane** s pojavnostjo srčne bolezni,
-- dobiti **interpretabilne rezultate** (učinek + grafi),
-- dobiti osnovo za nadaljnji korak **1.5 (feature selection)** in kasnejše modeliranje.
+V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (X)** z odvisno spremenljivko **Heart_Disease (Yes/No)**. Cilj je:
+- razumeti, katere spremenljivke so najbolj povezane s pojavnostjo srčne bolezni,
+- dobiti interpretabilne rezultate (test + mera učinka + graf),
+- dobiti osnovo za nadaljnji korak **1.5 (feature selection)**.
 
-### Uporabljeni statistični testi (izbor po tipu spremenljivk)
+### Uporabljeni testi (izbor po tipu spremenljivk)
+- **Numerične spremenljivke (X numerična, Y binarna):**
+  - preverjanje normalnosti po skupinah (Yes/No) in enakosti varianc,
+  - nato: Studentov t-test / Welchov t-test / **Mann–Whitney U** (če normalnost ni izpolnjena).
+- **Kategorialne spremenljivke (X kategorialna, Y binarna):**
+  - **χ² test neodvisnosti**,
+  - Fisherjev eksaktni test bi uporabila pri 2×2 tabelah z zelo majhnimi pričakovanimi frekvencami (v tem naboru to zaradi velikega N praviloma ni potrebno).
 
-**Numerične spremenljivke (X numerična, Y binarna):**
-- preverjanje normalnosti porazdelitve po skupinah (Yes/No),
-- preverjanje enakosti varianc (Levenov test),
-- nato:
-  - **Studentov t-test** (normalnost + enake variance),
-  - **Welchov t-test** (normalnost + neenake variance),
-  - **Mann–Whitney U** (če normalnost ni izpolnjena).
-
-**Kategorialne spremenljivke (X kategorialna, Y binarna):**
-- **χ² test neodvisnosti**,
-- če je tabela **2×2** in so pričakovane frekvence **< 5**, uporabiva **Fisherjev eksaktni test**.
-
-Ker je vzorec zelo velik, so p-vrednosti pogosto zelo majhne (**p < 0.001**), zato za realno pomembnost upoštevava tudi **mere učinka**:
+Ker je vzorec zelo velik, so p-vrednosti pogosto ekstremno majhne, zato za praktično pomembnost upoštevava tudi **mere učinka**:
 - **Cramérjev V** (kategorialne spremenljivke),
-- **Cohenov d** ali **rank-biserial r** (numerične spremenljivke).
+- **rank-biserial r** (numerične spremenljivke pri Mann–Whitney).
 
-### TOP povezave (po meri učinka)
+### TOP povezave (razvrščeno po |učinku|)
+Spodaj je TOP 10 spremenljivk glede na absolutno vrednost mere učinka (podatki iz skupne tabele):
 
-Spodaj je prikaz najmočnejših povezav med X in Heart_Disease (povzetek iz skupne tabele):
+| X | Tip X | Test | Mera učinka | Učinek |
+|---|---|---|---|---:|
+| General_Health | kategorialna | χ² | Cramérjev V | 0.250 |
+| Age_Category | kategorialna | χ² | Cramérjev V | 0.242 |
+| Diabetes | kategorialna | χ² | Cramérjev V | 0.184 |
+| Arthritis | kategorialna | χ² | Cramérjev V | 0.154 |
+| Alcohol_Consumption | numerična | Mann–Whitney | rank-biserial r | -0.152 |
+| Weight_(kg) | numerična | Mann–Whitney | rank-biserial r | 0.109 |
+| Smoking_History | kategorialna | χ² | Cramérjev V | 0.108 |
+| BMI | numerična | Mann–Whitney | rank-biserial r | 0.107 |
+| Exercise | kategorialna | χ² | Cramérjev V | 0.096 |
+| Checkup | kategorialna | χ² | Cramérjev V | 0.094 |
 
-| X | Tip X | Test | p | Mera učinka | Učinek |
-|---|---|---|---|---|---|
-| General_Health | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.251 |
-| Age_Category | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.242 |
-| Diabetes | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.184 |
-| Arthritis | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.158 |
-| Exercise | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.153 |
-| Alcohol_Consumption | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | -0.152 |
-| Smoking_History | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.139 |
-| Weight_(kg) | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | 0.109 |
-| BMI | numerična | Mann–Whitney U | <0.001 | Rank-biserial r | 0.107 |
-| Checkup | kategorialna | χ² test neodvisnosti | <0.001 | Cramérjev V | 0.102 |
+### Kratka interpretacija (v kontekstu procesa)
+- Najmočnejše povezave s srčno boleznijo sta **General_Health** in **Age_Category**: slabša samoocena zdravja in višja starostna skupina sta povezani z višjim deležem `Heart_Disease=Yes`.
+- Pomembne povezave imajo tudi **Diabetes** in **Arthritis**, kar je smiselno glede na znane dejavnike tveganja.
+- Pri **BMI** in **Weight_(kg)** so razlike statistično značilne, vendar z manjšim učinkom (pri velikem N je zato bolj pomembna **velikost učinka** kot sama p-vrednost).
+- Pri **Alcohol_Consumption** je učinek negativen (nižja poraba pri `Yes`)
 
-**Interpretacija (v kontekstu procesa):**
-- Najmočnejše povezave s srčno boleznijo so pri **General_Health** in **Age_Category** (največji Cramérjev V) → slabše splošno zdravje in višja starostna skupina sta povezana z višjo pojavnostjo Heart_Disease.
-- Pomembne povezave imajo tudi **Diabetes**, **Arthritis**, **Exercise** in **Smoking_History**, kar je smiselno glede na znane dejavnike tveganja.
-- Pri numeričnih spremenljivkah so razlike statistično značilne, vendar so učinki večinoma manjši (npr. Heart_Disease=Yes ima višji BMI/težo). Pri tako velikem N je zato bolj pomembno gledati **velikost učinka** in ne samo p-vrednost.
+## 1.5 Izbor spremenljivk (Feature Selection – klasifikacija)
+
+Za izbor pomembnih spremenljivk uporabiva več metod:
+- **Random Forest feature importance**
+- **Logistična regresija z Elastic Net regularizacijo** (upoštevava absolutno vrednost koeficientov)
+- **RFE** (Recursive Feature Elimination)
+
+Nato rezultate normalizirava in agregirava v skupni “combined score” (povprečje 3 metod).
+
+### Končni izbor spremenljivk za modeliranje
+V modele vključiva spremenljivke z oznako `Izbrano = DA` (agregirano po metodah):
+- `Age_Category`
+- `General_Health`
+- `Diabetes`
+- `Arthritis`
+- `Sex`
+- `BMI`
+- `Weight_(kg)`
+
+Graf TOP 10 (agregirano):
+<img src="figures/feature_selection_top10.png" width="750">
 
 ---
 
@@ -268,4 +284,5 @@ Pri metriki **F1** pa se pojavijo večje razlike, kar je pričakovano, ker je **
 # NEED TO ADD COMMENTS TO THE TABLE !!!!!!!!! 
 # !!!!!!!!!!!!!!!!
 # !!!!!!!!!!!!!!!!!!!!!!
+
 
