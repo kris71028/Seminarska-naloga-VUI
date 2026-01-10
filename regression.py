@@ -286,7 +286,7 @@ def compare_models(df, features=None):
 
     # ---------------- Linear Regression (no saving) ----------------
     rmse_mean, rmse_std = cv_rmse_linear(df, features)
-    _, _, _, _, r2 = run_linear(df, features)
+    linear_model, _, _, _, r2 = run_linear(df, features)
     comparison.append([
         "Linear Regression",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
@@ -317,7 +317,7 @@ def compare_models(df, features=None):
     ])
 
     # ---------------- Random Forest (not saved) ----------------
-    _, _, rmse_mean, rmse_std, r2 = run_random_forest(
+    rf_model, _, rmse_mean, rmse_std, r2 = run_random_forest(
         df, n_estimators=50, max_depth=3, features=features
     )
 
@@ -367,7 +367,15 @@ def compare_models(df, features=None):
         key=lambda s: s.str.split(" ± ").str[0].astype(float)
     )
 
-    return df_comparison
+    models = {
+        "linear": linear_model,
+        "ridge": ridge_pipeline,
+        "random_forest": rf_model,
+        "gradient_boosting": gb_model,
+        "xgboost": xgb_model
+    }
+
+    return df_comparison, models
 
 
 def spearman_correlation(df, features):
@@ -389,14 +397,68 @@ def spearman_correlation(df, features):
 
     return corr_df
 
+def pearson_correlation(df, features):
+    data = df[features + ["BMI"]].dropna()
+
+    corr = data.corr(method="pearson")["BMI"].drop("BMI")
+    pvals = {}
+
+    from scipy.stats import pearsonr
+    for f in features:
+        r, p = pearsonr(data[f], data["BMI"])
+        pvals[f] = p
+
+    corr_df = pd.DataFrame({
+        "Feature": corr.index,
+        "Pearson_r": corr.values,
+        "p_value": [pvals[f] for f in corr.index]
+    }).sort_values("Pearson_r", key=abs, ascending=False)
+
+    return corr_df
+
+def mann_whitney_u_correlation(df, features):
+    from scipy.stats import mannwhitneyu
+
+    results = []
+
+    for f in features:
+        subset = df[[f, "BMI"]].dropna()
+
+        group0 = subset[subset[f] == 0]["BMI"]
+        group1 = subset[subset[f] == 1]["BMI"]
+
+        # Skip if one group is empty
+        if len(group0) == 0 or len(group1) == 0:
+            continue
+
+        u_stat, p_value = mannwhitneyu(
+            group0,
+            group1,
+            alternative="two-sided"
+        )
+
+        results.append({
+            "Feature": f,
+            "U_statistic": u_stat,
+            "p_value": p_value,
+            "Median_BMI_0": group0.median(),
+            "Median_BMI_1": group1.median()
+        })
+
+    result_df = pd.DataFrame(results).sort_values("p_value")
+
+    return result_df
+
+
 import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_correlation(df, features):
+def plot_correlation(df):
+    features = all_features
     target = "BMI"
     binary_threshold = 2
-    n_rows = 2
+    n_rows = 4
     fig_width = 18
     fig_height = 8
 
@@ -452,3 +514,134 @@ def plot_correlation(df, features):
 
     plt.tight_layout()
     plt.show()
+
+import scipy.stats as stats
+def check_normality(df, columns=None, plot=False, alpha=0.05):
+    """
+    Checks normality for selected columns (numeric or categorical with >2 levels).
+    Ignores binary columns automatically.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe with preprocessed columns.
+    columns : list, optional
+        List of columns to check. If None, all columns are checked.
+    plot : bool
+        Whether to show Q–Q plots.
+    alpha : float
+        Significance level for Shapiro-Wilk.
+
+    Returns
+    -------
+    pd.DataFrame
+        Table with Variable, Shapiro_p, Normal (YES/NO), N_unique
+    """
+    results = []
+
+    if columns is None:
+        columns = df.columns
+
+    for col in columns:
+        data = df[col].dropna()
+
+        # Skip binary columns
+        if data.nunique() <= 2:
+            continue
+
+        # Ensure numeric type
+        try:
+            data_numeric = pd.to_numeric(data)
+            data_numeric = data_numeric.sample(n=5000)
+        except:
+            print(f"Skipping column {col}: not numeric")
+            continue
+
+        if len(data_numeric) < 3:
+            normality = "Insufficient data"
+            p_val = None
+        else:
+            stat, p_val = stats.shapiro(data_numeric)
+            normality = "YES" if float(p_val) > alpha else "NO"
+
+            if plot:
+                plt.figure(figsize=(4, 4))
+                stats.probplot(data_numeric, dist="norm", plot=plt)
+                plt.title(f"Normality: {col} (p={p_val:.3f})")
+                plt.tight_layout()
+                plt.show()
+
+        results.append({
+            "Variable": col,
+            "Shapiro_p": p_val,
+            "Normal": normality,
+            "N_unique": data_numeric.nunique()
+        })
+
+    return pd.DataFrame(results).sort_values("Variable")
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import numpy as np
+import pandas as pd
+from scipy.stats import norm, wilcoxon
+
+def make_everyone_exercise(df, model, important_features, tolerance=2.0):
+    df_test = df[model.get_booster().feature_names].copy()
+    y_true = df["BMI"].copy()
+
+    # Copy and apply global change
+    df_test_modified = df_test.copy()
+    df_test_modified["Exercise"] = 1
+
+    # Predictions
+    y_pred_before = model.predict(df_test)
+    y_pred_after  = model.predict(df_test_modified)
+
+    # --- Regression metrics ---
+    mae_before = mean_absolute_error(y_true, y_pred_before)
+    mae_after  = mean_absolute_error(y_true, y_pred_after)
+    rmse_before = np.sqrt(mean_squared_error(y_true, y_pred_before))
+    rmse_after  = np.sqrt(mean_squared_error(y_true, y_pred_after))
+    mean_before = np.mean(y_pred_before)
+    mean_after  = np.mean(y_pred_after)
+
+    metrics_table = pd.DataFrame({
+        "Metric": ["MAE", "RMSE", "Mean BMI"],
+        "Before": [mae_before, rmse_before, mean_before],
+        "After":  [mae_after, rmse_after, mean_after],
+        "Difference": [mae_after - mae_before, rmse_after - rmse_before, mean_after - mean_before]
+    })
+
+    mean_bmi_diff = metrics_table.loc[metrics_table["Metric"] == "Mean BMI", "Difference"].values[0]
+    if mean_bmi_diff < 0:
+        print(f"\nPredicted BMI decreased by {abs(mean_bmi_diff):.2f}.")
+    else:
+        print(f"\nPredicted BMI increased by {mean_bmi_diff:.2f}.")
+
+    # --- Six Sigma Analysis ---
+    errors_before = np.abs(y_pred_before - y_true)
+    errors_after  = np.abs(y_pred_after - y_true)
+
+    defects_before = np.sum(errors_before > tolerance)
+    defects_after  = np.sum(errors_after > tolerance)
+
+    N = len(y_true)
+    DPMO_before = defects_before / N * 1e6
+    DPMO_after  = defects_after / N * 1e6
+
+    def dpmo_to_sigma(dpmo):
+        return norm.ppf(1 - dpmo / 1e6)
+
+    sigma_before = dpmo_to_sigma(DPMO_before)
+    sigma_after  = dpmo_to_sigma(DPMO_after)
+
+    six_sigma_table = pd.DataFrame({
+        "Metric": ["Defects", "DPMO", "Sigma Level"],
+        "Before": [defects_before, DPMO_before, sigma_before],
+        "After": [defects_after, DPMO_after, sigma_after],
+        "Difference": [defects_after - defects_before, DPMO_after - DPMO_before, sigma_after - sigma_before]
+    })
+
+    # Wilcoxon test
+    stat, p_value = wilcoxon(errors_before, errors_after)
+    return metrics_table, six_sigma_table, p_value
