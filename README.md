@@ -272,10 +272,28 @@ To je tipična posledica **neuravnoteženih razredov** (model se “nauči”, d
 
 **AUC** ostaja približno enak, ker je AUC neodvisen od izbranega praga (threshold), uteževanje pa predvsem premakne odločanje pri napovedih.
 
+## 2.3 Primerjava modelov (validacijska množica) – **weighted** (10-fold CV)
+
+| Model | Tip | Parametri | Metrike (mean±SD) | AIC/BIC | Komentar | Izbor |
+| --- | --- | --- | --- | --- | --- | --- |
+| LogisticRegression | LogisticRegression | solver=lbfgs, penalty=l2, C=0.8, max_iter=500, class_weight=balanced | AUC: 0.810 ± 0.005<br>Accuracy: 0.699 ± 0.004<br>Sensitivity: 0.777 ± 0.009<br>Specificity: 0.700 ± 0.004<br>PPV: 0.185 ± 0.002<br>NPV: 0.973 ± 0.001<br>F1: 0.299 ± 0.004 | 267276.6/267641.2 | Visoka občutljivost, a več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+| LinearSVC | LinearSVC | C=1.2, max_iter=5000, class_weight=balanced | AUC: 0.806 ± 0.005<br>Accuracy: 0.704 ± 0.004<br>Sensitivity: 0.772 ± 0.010<br>Specificity: 0.704 ± 0.004<br>PPV: 0.187 ± 0.002<br>NPV: 0.973 ± 0.001<br>F1: 0.300 ± 0.004 | — | Visoka občutljivost, a več lažno pozitivnih (nižja specifičnost). |  |
+| SGDClassifier | SGDClassifier | loss=log_loss, penalty=elasticnet, alpha=0.0001, l1_ratio=0.15, max_iter=2000, class_weight=balanced | AUC: 0.805 ± 0.005<br>Accuracy: 0.707 ± 0.004<br>Sensitivity: 0.748 ± 0.012<br>Specificity: 0.711 ± 0.005<br>PPV: 0.186 ± 0.002<br>NPV: 0.971 ± 0.001<br>F1: 0.297 ± 0.004 | — | Visoka občutljivost, a več lažno pozitivnih (nižja specifičnost). |  |
+| ExtraTrees | ExtraTreesClassifier | n_estimators=200, max_depth=16, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced | AUC: 0.804 ± 0.005<br>Accuracy: 0.725 ± 0.004<br>Sensitivity: 0.740 ± 0.009<br>Specificity: 0.725 ± 0.004<br>PPV: 0.199 ± 0.002<br>NPV: 0.972 ± 0.001<br>F1: 0.304 ± 0.004 | — | Visoka občutljivost, a več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+| RandomForest | RandomForestClassifier | n_estimators=200, max_depth=14, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced_subsample | AUC: 0.803 ± 0.005<br>Accuracy: 0.744 ± 0.004<br>Sensitivity: 0.711 ± 0.013<br>Specificity: 0.744 ± 0.004<br>PPV: 0.205 ± 0.002<br>NPV: 0.970 ± 0.001<br>F1: 0.308 ± 0.005 | — | Visoka občutljivost, a več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+
 **Grafi:**
 - <img src="figures/2_classification/cv_auc_weighted.png" width="750">
 - <img src="figures/2_classification/cv_f1_weighted.png" width="750">
 
 ---
+### Tabela: TOP 3 modeli – testna množica (weighted)
+
+| Model | Tip | Parametri | Metrike | AIC/BIC | Komentar | Izbor |
+| --- | --- | --- | --- | --- | --- | --- |
+| RandomForest | RandomForestClassifier | n_estimators=200, max_depth=14, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced_subsample | AUC: 0.810; Acc: 0.742; Sens: 0.720; Spec: 0.744; PPV: 0.186; NPV: 0.967; F1: 0.311; Conf(TP/FP/TN/FN): 3595/15778/36210/1391 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+| ExtraTrees | ExtraTreesClassifier | n_estimators=200, max_depth=16, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced | AUC: 0.812; Acc: 0.727; Sens: 0.750; Spec: 0.725; PPV: 0.177; NPV: 0.970; F1: 0.308; Conf(TP/FP/TN/FN): 3747/17372/34616/1239 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+| LogisticRegression | LogisticRegression | solver=lbfgs, penalty=l2, C=0.8, max_iter=500, class_weight=balanced | AUC: 0.816; Acc: 0.708; Sens: 0.788; Spec: 0.701; PPV: 0.188; NPV: 0.974; F1: 0.304; Conf(TP/FP/TN/FN): 3937/16997/34991/1049 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+
 
 
