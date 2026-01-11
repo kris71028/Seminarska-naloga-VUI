@@ -47,7 +47,7 @@ Vse korake, izpise in preveritve sva dokumentirala v Python zvezku: `1_2_pregled
 - Preverila sva popolne duplikate vrstic, kar pomeni: vrstica je identična drugi vrstici v vseh 19 stolpcih (ne gre za “ponavljanje” v enem stolpcu, ampak za 100% enak zapis).
 - *Rezultat*: 80 ponovitev (tj. ponovitve po prvem pojavu)
 - *Odločitev*: *duplikatov ne odstranjujeva*, ker nabor nima identifikatorja posameznika (ID) in gre za anketne podatke — popolnoma enaki odgovori so zato lahko realni in predstavljajo različne osebe z enakimi karakteristikami.
-prosim editaj to v lepo markdown notacijo
+
 ### Preverjanje ekstremnih vrednosti (outliers)
 - Pregledala sva razpone numeričnih spremenljivk (min/max) in porazdelitve.
 - Rezultat (min–max):
@@ -143,6 +143,8 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
 </table>
 
 --- 
+# Klasifikacija
+---
 ## 1.4 Bivariatna analiza (KLASIFIKACIJA: Heart_Disease)
 
 V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (X)** z odvisno spremenljivko **Heart_Disease (Yes/No)**. Cilj je:
@@ -207,8 +209,6 @@ Graf TOP 10 (agregirano):
 <img src="figures/feature_selection_top10.png" width="750">
 
 ---
-
-
 ## 2. DRUGI DEL: Gradnja in ocenjevanje modelov (KLASIFIKACIJA: Heart_Disease)
 
 ### 2.1 Priprava podatkov za modeliranje
@@ -294,6 +294,121 @@ To je tipična posledica **neuravnoteženih razredov** (model se “nauči”, d
 | RandomForest | RandomForestClassifier | n_estimators=200, max_depth=14, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced_subsample | AUC: 0.810; Acc: 0.742; Sens: 0.720; Spec: 0.744; PPV: 0.186; NPV: 0.967; F1: 0.311; Conf(TP/FP/TN/FN): 3595/15778/36210/1391 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
 | ExtraTrees | ExtraTreesClassifier | n_estimators=200, max_depth=16, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced | AUC: 0.812; Acc: 0.727; Sens: 0.750; Spec: 0.725; PPV: 0.177; NPV: 0.970; F1: 0.308; Conf(TP/FP/TN/FN): 3747/17372/34616/1239 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
 | LogisticRegression | LogisticRegression | solver=lbfgs, penalty=l2, C=0.8, max_iter=500, class_weight=balanced | AUC: 0.816; Acc: 0.708; Sens: 0.788; Spec: 0.701; PPV: 0.188; NPV: 0.974; F1: 0.304; Conf(TP/FP/TN/FN): 3937/16997/34991/1049 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+--- 
+# REGRESIJSKI PRIMER (Y = BMI)
+
+--- 
+## 1.4 Bivariatna analiza (REGRESIJA: BMI)
+
+V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (X)** z odvisno spremenljivko **BMI (numerična)**. Cilj je:
+- ugotoviti, katere spremenljivke imajo statistično in praktično pomembno povezavo z BMI,
+- dobiti interpretabilne rezultate (test + korelacija / p-vrednost) in vizualizacije,
+- pripraviti osnovo za korak **1.5 (feature selection)**.
+
+### Uporabljeni testi (izbor po tipu spremenljivk)
+- **Numerične / ordinalne spremenljivke:**  
+  - **Spearmanova korelacija (ρ)** in **Pearsonova korelacija (r)** (za oceno monotone / linearne povezave). :contentReference[oaicite:0]{index=0}
+- **Binarne spremenljivke (0/1):**
+  - **Mann–Whitney U test** (primerjava porazdelitev BMI med skupinama 0 vs 1). :contentReference[oaicite:1]{index=1}
+- **Normalnost (diagnostika):**
+  - Shapiro–Wilk test (na vzorcu do 5000 vrednosti, zaradi velikega N) + po potrebi Q–Q plot. 
+
+### Grafični prikazi
+Za vizualno interpretacijo:
+- pri binarnih X: **boxplot + stripplot**,
+- pri “kontinuirnih” X: **regplot (LOWESS)** za trend. :contentReference[oaicite:3]{index=3}
 
 
+## 1.5 Izbor spremenljivk (Feature Selection – regresija)
+
+V kodi sta definirana:
+- **širši nabor kandidatov (`all_features`)**:  
+  `Age_Category, Sex, Smoking_History, Exercise, Alcohol_Consumption, Fruit_Consumption, Green_Vegetables_Consumption, FriedPotato_Consumption, Diabetes, Depression, Arthritis, Checkup, Heart_Disease` :contentReference[oaicite:4]{index=4}
+- **ožji “interpretabilen” nabor (`important_features`)**:  
+  `Age_Category, Sex, Exercise, Diabetes, Arthritis, General_Health` :contentReference[oaicite:5]{index=5}
+
+Končno množico spremenljivk za regresijske modele določiva na podlagi kombinacije:
+- bivariatnih rezultatov (korelacije / Mann–Whitney),
+- pomembnosti značilk pri drevesnih modelih (feature importance),
+- interpretabilnosti in procesne smiselnosti (kaj lahko dejansko optimiziramo v praksi). 
+
+
+## 2. DRUGI DEL: Gradnja in ocenjevanje modelov (REGRESIJA: BMI)
+
+### 2.1 Priprava podatkov za modeliranje
+- Ciljna spremenljivka: **BMI**. :contentReference[oaicite:7]{index=7}
+- Podatke razdeliva na:
+  - **učno množico (80%)**
+  - **testno množico (20%)**
+- Ker podatki niso časovno odvisni, uporabiva naključno delitev. 
+
+### 2.2 Gradnja modelov (vsaj 5)
+Zgrajenih je 5 regresijskih modelov z nastavljenimi hiperparametri:
+1. **Linear Regression (OLS / statsmodels)** – linearni model. :contentReference[oaicite:10]{index=10}  
+2. **Ridge Regression** – `alpha=1.0`, z **StandardScaler** v pipeline.   
+3. **Random Forest Regressor** – `n_estimators=50`, `max_depth=3`. :contentReference[oaicite:12]{index=12}  
+4. **Gradient Boosting Regressor** – `n_estimators=50`, `max_depth=3`.   
+5. **XGBoost Regressor** – `n_estimators=100`, `max_depth=5`.   
+
+### 2.3 Metrike napovedne uspešnosti (CV)
+Za regresijo poročava:
+- **R²**
+- **RMSE**
+- **MAE**
+- **MAPE**
+
+### 2.3 Primerjava modelov (validacijska množica)
+Model | Tip | Parametri | Metrike (mean±SD čez CV) | AIC/BIC | Komentar | Izbor
+---|---|---|---|---|---|---
+Linear Regression | OLS | – | RMSE, R² | – | interpretabilen baseline |  
+Ridge | Ridge | alpha=1.0 | RMSE, R² | – | stabilen linearni model | **DA (TOP 3)**
+Gradient Boosting | GBR | n_estimators=50, max_depth=3 | RMSE, R² | – | dobro lovi nelinearnosti | **DA (TOP 3)**
+XGBoost | XGB | n_estimators=100, max_depth=5 | RMSE, R² | – | najboljša napovedna moč | **DA (TOP 3)**
+Random Forest | RF | n_estimators=50, max_depth=3 | RMSE, R² | – | baseline drevesni ensemble |
+
+## 3. Izbor najboljših modelov in testiranje (REGRESIJA)
+Na podlagi validacijskih rezultatov izbereva **TOP 3 regresijske modele**:
+- **XGBoost**
+- **Gradient Boosting**
+- **Ridge Regression** 
+
+Modele shraniva in jih uporabiva tudi v aplikaciji:
+- `models/ridge_model.joblib`
+- `models/gradient_boosting_model.joblib`
+- `models/xgboost_model.joblib` 
+
+---
+## 4. Interaktivna aplikacija (Simulacija in optimizacija)
+
+Aplikacija je implementirana v **Streamlit** in pokriva oba primera:
+- **Klasifikacija:** napoved `Heart_Disease (Yes/No)`
+- **Regresija:** napoved `BMI`
+
+### Zagon aplikacije
+1. Namestitev odvisnosti:
+   ```bash
+   pip install -r requirements.txt
+  
+2. Zagon aplikacije:
+  ```bash
+  streamlit run app.py
+  ```
+### 4.1 Izbira modela
+Uporabnik lahko izbere enega izmed 3 najboljših modelov:
+- posebej za klasifikacijo (TOP 3),
+- posebej za regresijo (TOP 3).
+
+### 4.2 Napoved za posamezen ali skupinski vzorec
+Aplikacija omogoča:
+- vnos vrednosti spremenljivk (polja / drsniki / izbor vrednosti),
+- izračun napovedi Y,
+- grafični prikaz rezultatov,
+- (opcijsko) napoved za več vzorcev z uvozom CSV ter izpisom rezultatov.
+
+### 4.3 Simulacija sprememb (optimizacija procesa)
+Uporabnik lahko:
+- spreminja izbrano neodvisno spremenljivko,
+- opazuje grafični prikaz vpliva spremembe na napoved Y,
+- primerja napoved “pred” in “po” spremembi,
+- izvozi rezultate simulacije v CSV.
 
