@@ -467,20 +467,14 @@ Tipična interpretacija (podprta s smerjo iz simulacij v aplikaciji):
 | **Sex** | razlike po spolu | omogoča segmentacijo programov |
 
 ### Procesno smiselne spremembe
-- **Povečanje telesne aktivnosti** (najbolj vplivno + izvedljivo)
-- **Prehranske intervencije** (zmanjšanje ocvrte hrane, izboljšanje navad)
-- **Podpora duševnemu zdravju** (depresija kot “multiplikator” slabih navad)
-- **Ciljani programi za rizične skupine** (starejši, diabetes, arthritis)
+Implementirati bi bilo smiselno več telovadbe, podpora duševnemu zdravju, boljša prehrana.
 
-### Priporočila vodstvu (konkretno)
-1. **Program “Aktiven življenjski slog”**: cilj na redno telesno aktivnost (npr. tedenski cilji + spremljanje).
-2. **Prehranski ukrepi**: zmanjšanje pogoste ocvrte hrane (izobraževanje + substitucije).
-3. **Celostni pristop**: vključitev podpore pri depresiji/stresu (ker vpliva na prehrano in gibanje).
-4. **Segmentacija ukrepov**: starostne skupine in kronična stanja (diabetes/arthritis) naj imajo prilagojene programe.
+### Priporočila vodstvu
+Priporočilo je več telovadbe, saj je to ena stvar ki jo ni težko vključiti v svoje življenje za večino ljudi. Lahko bi tudi imeli programe ki učijo ljudi o zdravi hrani in jih napotili k specialistom za duševno zdravje če imajo depresijo.
 
 ---
 
-## Skupni zaključek (razumljivo vodstvu)
+## Skupni zaključek
 - Za **zmanjšanje srčno-žilnega tveganja** je ključno zgodnje prepoznavanje rizičnih skupin (model) in ciljani ukrepi.
 - Največji procesni učinek imata:
   - **zniževanje BMI (prehrana + gibanje)** in
@@ -641,5 +635,6 @@ Priporočava **implementacijo sprememb predvsem tam, kjer je učinek procesno na
    * vpliv na klasifikacijo je pri pragu 0.5 manjši, vendar je ukrep dolgoročno smiseln in se v regresijskem primeru kaže kot znižanje povprečnega BMI (≈ −0.34), zato ga priporočava kot del celostnega programa zdravja.
 
 Skupno: modeli omogočajo **merljivo odločanje** (koga ciljati) in **kvantificiranje učinkov ukrepov** (kaj se izboljša in za koliko). Zato je smiselno spremembe uvajati postopno: najprej ukrepi z največjim vplivom (General_Health, Diabetes), nato razširitev na celostne programe (BMI/Exercise), ob sprotnem spremljanju KPI-jev in sigma metrik.
+
 
 
