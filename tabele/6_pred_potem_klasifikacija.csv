@@ -1,0 +1,22 @@
+Model,Metrika,Pred,Po,Razlika,Interpretacija
+LogisticRegression,Povp. tveganje (P(Yes)) — General_Health +1,0.3616176100911798,0.2780827071422237,-0.0835349029489561,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — General_Health +1,0.31092260122063753,0.1872885334542099,-0.12363406776642763,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — General_Health +1,19206.0,11569.0,-7637.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — BMI -2 (konsistentno),0.3616176100911798,0.3608103946085499,-0.0008072154826299083,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — BMI -2 (konsistentno),0.31092260122063753,0.30990270515290347,-0.0010198960677340607,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — BMI -2 (konsistentno),19206.0,19143.0,-63.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — Teža -5% (konsistentno),0.3616176100911798,0.3610312585194053,-0.0005863515717745016,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — Teža -5% (konsistentno),0.31092260122063753,0.310145537549983,-0.0007770636706545542,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — Teža -5% (konsistentno),19206.0,19158.0,-48.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — Alkohol -20%,0.3616176100911798,0.3616176100911798,0.0,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — Alkohol -20%,0.31092260122063753,0.31092260122063753,0.0,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — Alkohol -20%,19206.0,19206.0,0.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — Ocvrti krompir -20%,0.3616176100911798,0.3616176100911798,0.0,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — Ocvrti krompir -20%,0.31092260122063753,0.31092260122063753,0.0,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — Ocvrti krompir -20%,19206.0,19206.0,0.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — Vsi telovadijo,0.3616176100911798,0.3616176100911798,0.0,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — Vsi telovadijo,0.31092260122063753,0.31092260122063753,0.0,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — Vsi telovadijo,19206.0,19206.0,0.0,Nižje je bolje (manj napovedanih primerov bolezni).
+LogisticRegression,Povp. tveganje (P(Yes)) — Diabetes izboljšanje,0.3616176100911798,0.3507176215120523,-0.010899988579127495,Nižje je bolje (nižja povprečna verjetnost srčne bolezni).
+LogisticRegression,Delež napovedanih Yes (threshold=0.5) — Diabetes izboljšanje,0.31092260122063753,0.2939890887309579,-0.016933512489679614,Nižje je bolje (manj pričakovanih pozitivnih primerov).
+LogisticRegression,Št. napovedanih Yes (threshold=0.5) — Diabetes izboljšanje,19206.0,18160.0,-1046.0,Nižje je bolje (manj napovedanih primerov bolezni).

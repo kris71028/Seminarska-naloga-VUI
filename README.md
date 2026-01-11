@@ -47,7 +47,7 @@ Vse korake, izpise in preveritve sva dokumentirala v Python zvezku: `1_2_pregled
 - Preverila sva popolne duplikate vrstic, kar pomeni: vrstica je identična drugi vrstici v vseh 19 stolpcih (ne gre za “ponavljanje” v enem stolpcu, ampak za 100% enak zapis).
 - *Rezultat*: 80 ponovitev (tj. ponovitve po prvem pojavu)
 - *Odločitev*: *duplikatov ne odstranjujeva*, ker nabor nima identifikatorja posameznika (ID) in gre za anketne podatke — popolnoma enaki odgovori so zato lahko realni in predstavljajo različne osebe z enakimi karakteristikami.
-prosim editaj to v lepo markdown notacijo
+
 ### Preverjanje ekstremnih vrednosti (outliers)
 - Pregledala sva razpone numeričnih spremenljivk (min/max) in porazdelitve.
 - Rezultat (min–max):
@@ -143,6 +143,8 @@ Vse izračune, tabele in grafe sva izvedla v Python zvezku: `1_3_deskriptivna_st
 </table>
 
 --- 
+# Klasifikacija
+---
 ## 1.4 Bivariatna analiza (KLASIFIKACIJA: Heart_Disease)
 
 V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (X)** z odvisno spremenljivko **Heart_Disease (Yes/No)**. Cilj je:
@@ -207,8 +209,6 @@ Graf TOP 10 (agregirano):
 <img src="figures/feature_selection_top10.png" width="750">
 
 ---
-
-
 ## 2. DRUGI DEL: Gradnja in ocenjevanje modelov (KLASIFIKACIJA: Heart_Disease)
 
 ### 2.1 Priprava podatkov za modeliranje
@@ -294,6 +294,374 @@ To je tipična posledica **neuravnoteženih razredov** (model se “nauči”, d
 | RandomForest | RandomForestClassifier | n_estimators=200, max_depth=14, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced_subsample | AUC: 0.810; Acc: 0.742; Sens: 0.720; Spec: 0.744; PPV: 0.186; NPV: 0.967; F1: 0.311; Conf(TP/FP/TN/FN): 3595/15778/36210/1391 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
 | ExtraTrees | ExtraTreesClassifier | n_estimators=200, max_depth=16, min_samples_split=4, min_samples_leaf=2, max_features=sqrt, class_weight=balanced | AUC: 0.812; Acc: 0.727; Sens: 0.750; Spec: 0.725; PPV: 0.177; NPV: 0.970; F1: 0.308; Conf(TP/FP/TN/FN): 3747/17372/34616/1239 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
 | LogisticRegression | LogisticRegression | solver=lbfgs, penalty=l2, C=0.8, max_iter=500, class_weight=balanced | AUC: 0.816; Acc: 0.708; Sens: 0.788; Spec: 0.701; PPV: 0.188; NPV: 0.974; F1: 0.304; Conf(TP/FP/TN/FN): 3937/16997/34991/1049 | — | Visoka občutljivost, več lažno pozitivnih (nižja specifičnost). | DA (TOP 3) |
+--- 
+# REGRESIJSKI PRIMER (Y = BMI)
+
+--- 
+## 1.4 Bivariatna analiza (REGRESIJA: BMI)
+
+V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (X)** z odvisno spremenljivko **BMI (numerična)**. Cilj je:
+- ugotoviti, katere spremenljivke imajo statistično in praktično pomembno povezavo z BMI,
+- dobiti interpretabilne rezultate (test + korelacija / p-vrednost) in vizualizacije,
+- pripraviti osnovo za korak **1.5 (feature selection)**.
+
+### Uporabljeni testi (izbor po tipu spremenljivk)
+- **Numerične / ordinalne spremenljivke:**  
+  - **Spearmanova korelacija (ρ)** in **Pearsonova korelacija (r)** (za oceno monotone / linearne povezave). :contentReference[oaicite:0]{index=0}
+- **Binarne spremenljivke (0/1):**
+  - **Mann–Whitney U test** (primerjava porazdelitev BMI med skupinama 0 vs 1). :contentReference[oaicite:1]{index=1}
+- **Normalnost (diagnostika):**
+  - Shapiro–Wilk test (na vzorcu do 5000 vrednosti, zaradi velikega N) + po potrebi Q–Q plot. 
+
+### Grafični prikazi
+Za vizualno interpretacijo:
+- pri binarnih X: **boxplot + stripplot**,
+- pri “kontinuirnih” X: **regplot (LOWESS)** za trend. :contentReference[oaicite:3]{index=3}
 
 
+## 1.5 Izbor spremenljivk (Feature Selection – regresija)
+
+V kodi sta definirana:
+- **širši nabor kandidatov (`all_features`)**:  
+  `Age_Category, Sex, Smoking_History, Exercise, Alcohol_Consumption, Fruit_Consumption, Green_Vegetables_Consumption, FriedPotato_Consumption, Diabetes, Depression, Arthritis, Checkup, Heart_Disease` :contentReference[oaicite:4]{index=4}
+- **ožji “interpretabilen” nabor (`important_features`)**:  
+  `Age_Category, Sex, Exercise, Diabetes, Arthritis, General_Health` :contentReference[oaicite:5]{index=5}
+
+Končno množico spremenljivk za regresijske modele določiva na podlagi kombinacije:
+- bivariatnih rezultatov (korelacije / Mann–Whitney),
+- pomembnosti značilk pri drevesnih modelih (feature importance),
+- interpretabilnosti in procesne smiselnosti (kaj lahko dejansko optimiziramo v praksi). 
+
+
+## 2. DRUGI DEL: Gradnja in ocenjevanje modelov (REGRESIJA: BMI)
+
+### 2.1 Priprava podatkov za modeliranje
+- Ciljna spremenljivka: **BMI**. :contentReference[oaicite:7]{index=7}
+- Podatke razdeliva na:
+  - **učno množico (80%)**
+  - **testno množico (20%)**
+- Ker podatki niso časovno odvisni, uporabiva naključno delitev. 
+
+### 2.2 Gradnja modelov (vsaj 5)
+Zgrajenih je 5 regresijskih modelov z nastavljenimi hiperparametri:
+1. **Linear Regression (OLS / statsmodels)** – linearni model. :contentReference[oaicite:10]{index=10}  
+2. **Ridge Regression** – `alpha=1.0`, z **StandardScaler** v pipeline.   
+3. **Random Forest Regressor** – `n_estimators=50`, `max_depth=3`. :contentReference[oaicite:12]{index=12}  
+4. **Gradient Boosting Regressor** – `n_estimators=50`, `max_depth=3`.   
+5. **XGBoost Regressor** – `n_estimators=100`, `max_depth=5`.   
+
+### 2.3 Metrike napovedne uspešnosti (CV)
+Za regresijo poročava:
+- **R²**
+- **RMSE**
+- **MAE**
+- **MAPE**
+
+### 2.3 Primerjava modelov (validacijska množica)
+Model | Tip | Parametri | Metrike (mean±SD čez CV) | AIC/BIC | Komentar | Izbor
+---|---|---|---|---|---|---
+Linear Regression | OLS | – | RMSE, R² | – | interpretabilen baseline |  
+Ridge | Ridge | alpha=1.0 | RMSE, R² | – | stabilen linearni model | **DA (TOP 3)**
+Gradient Boosting | GBR | n_estimators=50, max_depth=3 | RMSE, R² | – | dobro lovi nelinearnosti | **DA (TOP 3)**
+XGBoost | XGB | n_estimators=100, max_depth=5 | RMSE, R² | – | najboljša napovedna moč | **DA (TOP 3)**
+Random Forest | RF | n_estimators=50, max_depth=3 | RMSE, R² | – | baseline drevesni ensemble |
+
+## 3. Izbor najboljših modelov in testiranje (REGRESIJA)
+Na podlagi validacijskih rezultatov izbereva **TOP 3 regresijske modele**:
+- **XGBoost**
+- **Gradient Boosting**
+- **Ridge Regression** 
+
+Modele shraniva in jih uporabiva tudi v aplikaciji:
+- `models/ridge_model.joblib`
+- `models/gradient_boosting_model.joblib`
+- `models/xgboost_model.joblib` 
+
+---
+## 4. Interaktivna aplikacija (Simulacija in optimizacija)
+
+Aplikacija je implementirana v **Streamlit** in pokriva oba primera:
+- **Klasifikacija:** napoved `Heart_Disease (Yes/No)`
+- **Regresija:** napoved `BMI`
+
+### Zagon aplikacije
+1. Namestitev odvisnosti:
+   ```bash
+   pip install -r requirements.txt
+  
+2. Zagon aplikacije:
+  ```bash
+  streamlit run app.py
+  ```
+### 4.1 Izbira modela
+Uporabnik lahko izbere enega izmed 3 najboljših modelov:
+- posebej za klasifikacijo (TOP 3),
+- posebej za regresijo (TOP 3).
+
+### 4.2 Napoved za posamezen ali skupinski vzorec
+Aplikacija omogoča:
+- vnos vrednosti spremenljivk (polja / drsniki / izbor vrednosti),
+- izračun napovedi Y,
+- grafični prikaz rezultatov,
+- (opcijsko) napoved za več vzorcev z uvozom CSV ter izpisom rezultatov.
+
+### 4.3 Simulacija sprememb (optimizacija procesa)
+Uporabnik lahko:
+- spreminja izbrano neodvisno spremenljivko,
+- opazuje grafični prikaz vpliva spremembe na napoved Y,
+- primerja napoved “pred” in “po” spremembi,
+- izvozi rezultate simulacije v CSV.
+
+---
+# 5. Povzetek ugotovitev in priporočila za optimizacijo
+
+Spodaj podajava zaključne ugotovitve in priporočila **ločeno** za:
+- **a) Klasifikacijo** (napoved `Heart_Disease`)
+- **b) Regresijo** (napoved `BMI`)
+
+---
+
+## 5A) KLASIFIKACIJA – `Heart_Disease` (binarno)
+
+### Izbor najboljšega modela (testna množica)
+Na testni množici med TOP3 modeli izbereva **LogisticRegression (weighted)** kot najboljši model, ker dosega:
+- **najvišji AUC = 0.816**
+- **najvišjo občutljivost (Sensitivity) = 0.788**  
+(kar je ključno pri odkrivanju srčne bolezni, kjer želimo ujeti čim več pozitivnih primerov)
+
+> Opomba: RandomForest in ExtraTrees imata nekoliko višji Accuracy/F1, vendar zaznata manj pozitivnih primerov (nižja Sensitivity). Pri “screening” uporabi je zato bolj smiselno dati prednost višji občutljivosti.
+
+### Spremenljivke z največjim vplivom (in smer vpliva)
+Najbolj vplivne spremenljivke (na podlagi bivariatne analize + feature selection + modelov) in interpretacija:
+
+| Spremenljivka | Vpliv na tveganje srčne bolezni | Pomen za proces |
+|---|---|---|
+| **Age_Category** | **pozitiven** (višja starost → več tveganja) | starost je močan, ne-spremenljiv dejavnik → ciljanje preventivnih ukrepov |
+| **General_Health** | **pozitiven** (slabša ocena → več tveganja) | proxy splošnega stanja → potreben sistematičen pregled |
+| **Diabetes** | **pozitiven** | diabetes je znan rizični faktor → preventivni programi in kontrola |
+| **Arthritis** | **pozitiven** (posredno) | pogosto povezan z manj gibanja/višjim BMI → sekundarni vpliv |
+| **BMI / Weight_(kg)** | **pozitiven** (višje → več tveganja) | ključno področje optimizacije (prehrana + gibanje) |
+| **Sex** | običajno **višje tveganje pri moških** (v povprečju) | segmentacija komunikacije in programov |
+
+### Procesno smiselne spremembe (kaj lahko realno izboljšamo)
+Spremenljivke, na katere lahko vplivamo procesno (v praksi):
+- **BMI / Weight_(kg)**: prehrana, gibanje, programi hujšanja
+- **Diabetes**: preventiva (preddiabetski programi), kontrola glikemije, redni pregledi
+- **General_Health**: zgodnja obravnava kroničnih težav, checkup programi
+- **Exercise** (čeprav ni v finalnem seznamu spremenljivk, je procesno zelo relevanten): povečanje telesne aktivnosti
+
+### Priporočila vodstvu (konkretno)
+1. **Vzpostavite “risk-screening” proces**: z modelom prepoznajte skupine z višjim tveganjem in jih povabite na preventivne preglede.
+2. **Programi za znižanje BMI** (največji “leverage”):
+   - ciljane delavnice prehrane + gibanja,
+   - spremljanje napredka (npr. 8–12 tednov program).
+3. **Diabetes preventiva in upravljanje**:
+   - prioritetna obravnava oseb z diabetesom / preddiabetesom,
+   - redni monitoring in edukacija.
+4. **Optimizacija praga (threshold)**:
+   - če želite ujeti več “Yes”, nastavite prag bolj “agresivno” (več občutljivosti, več lažno pozitivnih),
+   - prag lahko prilagodite glede na kapacitete (koliko ljudi lahko obravnavate).
+
+---
+
+## 5B) REGRESIJA – `BMI` (numerično)
+
+### Izbor najboljšega modela
+Kot najboljši model za napoved BMI izbereva **XGBoost**, ker ima najboljši rezultat med primerjanimi regresijskimi modeli (najnižji RMSE v primerjavi modelov, ter je med shranjenimi TOP3).
+
+> Opomba za interpretacijo: R² pri regresiji ni zelo visok (okoli ~0.15), kar pomeni, da model pojasni le del variabilnosti BMI. Kljub temu je uporaben za **simulacije “kaj-če”** in za primerjavo učinkov ukrepov na ravni populacije.
+
+### Spremenljivke z največjim vplivom (in smer vpliva)
+Pri regresiji so pomembne predvsem spremenljivke, ki so:
+- povezane z življenjskim slogom,
+- procesno vplivljive (cilj optimizacije).
+
+Tipična interpretacija (podprta s smerjo iz simulacij v aplikaciji):
+
+| Spremenljivka | Vpliv na BMI | Kaj to pomeni |
+|---|---|---|
+| **Exercise** | **negativen** (več gibanja → nižji BMI) | največji praktični vzvod za optimizacijo |
+| **FriedPotato_Consumption** | **pozitiven** (več → višji BMI) | prehranski ukrepi (manj ocvrte hrane) |
+| **Depression** | **pozitiven** (prisotnost → višji BMI) | pomemben posreden vpliv (motivacija, navade, gibanje) |
+| **Diabetes** | **pozitiven** | povezava z metabolnim tveganjem in telesno maso |
+| **Age_Category** | pogosto **pozitiven** | višja starost → večje tveganje za višji BMI (v povprečju) |
+| **General_Health** | slabše zdravje → **višji BMI** | splošno stanje in navade se odražajo v BMI |
+| **Arthritis** | **pozitiven** (posredno) | bolečine → manj gibanja → višji BMI |
+| **Sex** | razlike po spolu | omogoča segmentacijo programov |
+
+### Procesno smiselne spremembe
+- **Povečanje telesne aktivnosti** (najbolj vplivno + izvedljivo)
+- **Prehranske intervencije** (zmanjšanje ocvrte hrane, izboljšanje navad)
+- **Podpora duševnemu zdravju** (depresija kot “multiplikator” slabih navad)
+- **Ciljani programi za rizične skupine** (starejši, diabetes, arthritis)
+
+### Priporočila vodstvu (konkretno)
+1. **Program “Aktiven življenjski slog”**: cilj na redno telesno aktivnost (npr. tedenski cilji + spremljanje).
+2. **Prehranski ukrepi**: zmanjšanje pogoste ocvrte hrane (izobraževanje + substitucije).
+3. **Celostni pristop**: vključitev podpore pri depresiji/stresu (ker vpliva na prehrano in gibanje).
+4. **Segmentacija ukrepov**: starostne skupine in kronična stanja (diabetes/arthritis) naj imajo prilagojene programe.
+
+---
+
+## Skupni zaključek (razumljivo vodstvu)
+- Za **zmanjšanje srčno-žilnega tveganja** je ključno zgodnje prepoznavanje rizičnih skupin (model) in ciljani ukrepi.
+- Največji procesni učinek imata:
+  - **zniževanje BMI (prehrana + gibanje)** in
+  - **upravljanje diabetesa / splošnega zdravja**.
+- Modeli omogočajo **merljiv pristop**: predlagane ukrepe lahko testiramo s simulacijami (6) in pokažemo izboljšanje metrik ter sigma nivoja (7).
+---
+# 6. Testiranje globalnih sprememb (Simulacije)
+
+V tem koraku sva izvedla globalne “kaj-če” simulacije, kjer na celotni testni množici hkrati spremenimo izbrane vhodne spremenljivke (npr. izboljšanje splošnega zdravja, znižanje BMI, izboljšanje diabetesa …). Namen je pokazati, kako bi se spremenile napovedi modela in ključne metrike, če bi uvedli izbran optimizacijski ukrep na ravni populacije.
+
+### 6A) Klasifikacija – Heart_Disease (model: LogisticRegression weighted)
+
+Merjeno:
+- povprečno tveganje P(Yes),
+- delež napovedanih Yes (threshold = 0.5),
+- število napovedanih Yes.
+Spodaj so prikazani samo scenariji, ki so imeli vpliv (tj. sprememba ni 0).
+Tabela: Pred–Potem (Klasifikacija)
+
+| Model              | Metrika                                                      |     Pred |       Po |   Razlika | Interpretacija                                             |
+| ------------------ | ------------------------------------------------------------ | -------: | -------: | --------: | ---------------------------------------------------------- |
+| LogisticRegression | Povp. tveganje (P(Yes)) — General_Health +1                  | 0.361618 | 0.278083 | -0.083535 | Nižje je bolje (nižja povprečna verjetnost srčne bolezni). |
+| LogisticRegression | Delež napovedanih Yes (threshold=0.5) — General_Health +1    | 0.310923 | 0.187289 | -0.123634 | Nižje je bolje (manj pričakovanih pozitivnih primerov).    |
+| LogisticRegression | Št. napovedanih Yes (threshold=0.5) — General_Health +1      |    19206 |    11569 |     -7637 | Nižje je bolje (manj napovedanih primerov bolezni).        |
+| LogisticRegression | Povp. tveganje (P(Yes)) — Diabetes izboljšanje               | 0.361618 | 0.350718 | -0.010900 | Nižje je bolje (nižja povprečna verjetnost srčne bolezni). |
+| LogisticRegression | Delež napovedanih Yes (threshold=0.5) — Diabetes izboljšanje | 0.310923 | 0.293989 | -0.016934 | Nižje je bolje (manj pričakovanih pozitivnih primerov).    |
+| LogisticRegression | Št. napovedanih Yes (threshold=0.5) — Diabetes izboljšanje   |    19206 |    18160 |     -1046 | Nižje je bolje (manj napovedanih primerov bolezni).        |
+| LogisticRegression | Povp. tveganje (P(Yes)) — BMI −2                             | 0.361618 | 0.360810 | -0.000807 | Nižje je bolje (nižja povprečna verjetnost srčne bolezni). |
+| LogisticRegression | Delež napovedanih Yes (threshold=0.5) — BMI −2               | 0.310923 | 0.309903 | -0.001020 | Nižje je bolje (manj pričakovanih pozitivnih primerov).    |
+| LogisticRegression | Št. napovedanih Yes (threshold=0.5) — BMI −2                 |    19206 |    19143 |       -63 | Nižje je bolje (manj napovedanih primerov bolezni).        |
+| LogisticRegression | Povp. tveganje (P(Yes)) — Teža −5%                           | 0.361618 | 0.361031 | -0.000586 | Nižje je bolje (nižja povprečna verjetnost srčne bolezni). |
+| LogisticRegression | Delež napovedanih Yes (threshold=0.5) — Teža −5%             | 0.310923 | 0.310146 | -0.000777 | Nižje je bolje (manj pričakovanih pozitivnih primerov).    |
+| LogisticRegression | Št. napovedanih Yes (threshold=0.5) — Teža −5%               |    19206 |    19158 |       -48 | Nižje je bolje (manj napovedanih primerov bolezni).        |
+
+Kratek komentar učinkov:
+- Največji vpliv ima scenarij General_Health +1, kjer se povprečno tveganje in število napovedanih Yes izrazito zmanjšata.
+- Opazen učinek ima tudi izboljšanje diabetesa, kar je skladno z znanimi dejavniki tveganja.
+- Spremembe pri BMI/teži so v smeri izboljšanja, vendar so relativno majhne (pri threshold=0.5 se malo primerov premakne čez odločilno mejo).
+### 6B) Regresija – BMI (model: XGBoost, scenarij: Vsi se gibamo)
+V regresijskem primeru sva simulirala scenarij “Vsi se gibamo”, kjer sva za vse zapise v testni množici nastavila Exercise = Yes. Nato sva primerjala napovedi BMI pred in po spremembi.
+| Metric   |    Before |     After | Difference |
+| -------- | --------: | --------: | ---------: |
+| MAE      |  4.429150 |  4.429673 |   0.000523 |
+| RMSE     |  5.962129 |  6.014610 |   0.052481 |
+| Mean BMI | 28.662680 | 28.323908 |  -0.338772 |
+
+Kratek komentar učinkov:
+- Povprečni napovedani BMI se pri scenariju “vsi telovadijo” zniža za približno 0.34.
+- MAE/RMSE ostaneta praktično podobna (rahlo višja), kar je pričakovano pri globalni simulaciji, ker primerjamo napovedi z nespremenjenimi dejanskimi vrednostmi.
+
+---
+# 7. Six Sigma analiza – PREJ in POTEM
+
+### 7.1 Klasifikacija (Heart_Disease) – napake = napačne klasifikacije
+V klasifikacijskem primeru napako (defect) definiramo kot napačno klasifikacijo (model napove Yes/No narobe). Ker ima vsak zapis eno odločitev, vzamemo 1 opportunity na zapis. Na tej osnovi izračunamo:
+- DPMO = (število napak / (št. zapisov × 1)) × 1,000,000
+- Sigma nivo iz izkoristka (yield = 1 − DPMO/1e6)
+Spodnja tabela prikazuje stanje PREJ in POTEM za izbrane scenarije.
+
+| Model              | Scenarij             | DPMO PREJ | Sigma PREJ | DPMO POTEM | Sigma POTEM | Izboljšava (ΔSigma) |
+| ------------------ | -------------------- | --------: | ---------: | ---------: | ----------: | ------------------: |
+| LogisticRegression | General_Health +1    |    264072 |   0.630841 |     170905 |    0.950593 |        **0.319752** |
+| LogisticRegression | Diabetes izboljšanje |    264072 |   0.630841 |     243172 |    0.696134 |            0.065293 |
+| LogisticRegression | BMI -2               |    264072 |   0.630841 |     259863 |    0.643768 |            0.012926 |
+| LogisticRegression | Teža -5%             |    264072 |   0.630841 |     267019 |    0.621855 |           -0.008986 |
+
+Interpretacija izboljšave procesa:
+
+- Največjo izboljšavo doseže scenarij “General_Health +1”, kjer se DPMO zmanjša iz 264072 na 170905, sigma nivo pa se poveča iz 0.631 na 0.951 (ΔSigma ≈ +0.320). To pomeni opazno manj napačnih klasifikacij na milijon odločitev in s tem boljši “proces” odločanja modela.
+- Scenarij “Diabetes izboljšanje” prinese zmerno izboljšavo (ΔSigma ≈ +0.065).
+- Scenarija “BMI -2” in “Teža -5%” imata zelo majhen oziroma negativen učinek na sigma nivo (pri teži -5% se DPMO celo rahlo poveča).
+Statistična in procesna pomembnost:
+- Za glavni scenarij (General_Health +1) je McNemar test pokazal p ≈ 0, kar pomeni, da je razlika v napakah statistično značilna.
+- Procesno je sprememba smiselna predvsem tam, kjer je ΔSigma dovolj velik (tukaj je to General_Health +1). Pri minimalnih ΔSigma (BMI -2) gre za majhno izboljšavo, ki je v praksi manj prepričljiva.
+Ali upravičuje implementacijo v praksi?
+- Scenarij General_Health +1 kaže največji potencial, vendar predstavlja “globalno izboljšanje” splošnega zdravja, kar v praksi pomeni potrebo po širših preventivnih programih (checkup, zgodnja obravnava kroničnih težav, vodenje rizičnih skupin). Glede na velik ΔSigma je tak ukrep iz vidika modela najbolj upravičen.
+- Pri drugih scenarijih je učinek manjši; implementacija je bolj smiselna kot dopolnilo, ne kot glavni nosilec optimizacije.
+
+
+### 7.2 Regresija (BMI) – napake = odstopanje nad toleranco
+V regresijskem primeru napako (defect) definiramo preko tolerance: zapis je “defekten”, če je absolutna napaka |BMI − napoved| večja od izbrane tolerance. Na tej osnovi nato izračunamo DPMO in sigma nivo pred in po spremembi.
+
+| Metric      |        Before |         After |   Difference |
+| ----------- | ------------: | ------------: | -----------: |
+| Defects     | 215810.000000 | 214768.000000 | -1042.000000 |
+| DPMO        | 698744.390553 | 695370.628193 | -3373.762360 |
+| Sigma Level |     -0.520793 |     -0.511132 |     0.009661 |
+
+
+## 8. Končni povzetek (Executive Summary)
+
+V seminarski nalogi sva obravnavala problem **napovedovanja srčno-žilnega tveganja** in hkrati pripravila osnovo za **optimizacijo procesa** z uporabo podatkovno-podprte simulacije “kaj-če”. Uporabila sva javno dostopno bazo *Cardiovascular Diseases Risk Prediction Dataset* (308,854 zapisov × 19 spremenljivk), ki vsebuje anketne (samoporočane) podatke o zdravju in življenjskem slogu odraslih ter ciljno spremenljivko **Heart_Disease (Yes/No)**. Poleg klasifikacije sva za prikaz regresijskega pristopa modelirala še **BMI** kot numerični izhod (regresijski primer).
+
+### Kaj je bil problem
+
+Ključni izziv je bil:
+
+1. zgraditi **zanesljiv napovedni model** za odkrivanje primerov z višjim tveganjem srčne bolezni (screening pristop), in
+2. preveriti, **katere spremembe vhodnih spremenljivk** (ukrepi) bi lahko procesno zmanjšale napovedano tveganje ter kako se to odrazi v **Six Sigma metrikah** (DPMO, sigma nivo).
+
+### Kateri modeli so najboljši in zakaj
+
+**Klasifikacija (Heart_Disease):** Med TOP3 modeli na testni množici izbereva **LogisticRegression (weighted)** kot najboljši kompromis, ker dosega:
+
+* **najvišji AUC = 0.816** in
+* **najvišjo občutljivost (Sensitivity) = 0.788**, kar je ključno pri odkrivanju pozitivnih primerov (želimo “ujeti” čim več oseb z boleznijo/tveganjem).
+
+**Regresija (BMI):** Kot najboljši model za napoved BMI izbereva **XGBoost**, ker v primerjavi uporabljenih regresijskih modelov dosega najboljšo napovedno moč (najnižji RMSE med TOP3) in je primeren za simulacije “kaj-če” na populacijskem nivoju.
+
+### Katere spremenljivke je smiselno optimizirati
+
+Iz bivariatne analize, izbora značilk in procesne interpretacije izstopajo spremenljivke, ki imajo močan vpliv in so hkrati **vsaj delno vplivljive**:
+
+* **General_Health** (splošno zdravje): najbolj izrazito povezano s srčno boleznijo; procesno pomeni potrebo po preventivi, checkup programih in zgodnji obravnavi kroničnih težav.
+* **Diabetes**: pomemben dejavnik tveganja; smiselni so programi preventive, nadzor glikemije in edukacija.
+* **BMI / Weight_(kg)**: neposredno povezano s tveganjem; optimizacija preko prehranskih in gibalnih intervencij.
+* **Exercise** (v regresiji): glavni praktični vzvod za zniževanje BMI (več gibanja → nižji BMI).
+* **Age_Category** in **Sex** sta pomembna, vendar **neoptimizabilna**; uporabljata se predvsem za segmentacijo in ciljanje ukrepov (kdo je prioriteten za preventivo).
+
+### Kakšni so učinki sprememb (simulacije “kaj-če”)
+
+Pri klasifikaciji (LogisticRegression weighted) se pri globalnih simulacijah najbolj izkaže scenarij:
+
+* **General_Health +1**, kjer se povprečno napovedano tveganje in število napovedanih pozitivnih primerov bistveno znižata; opazen učinek ima tudi **Diabetes izboljšanje**, medtem ko sta vpliva **BMI −2** in **Teža −5%** precej manjša pri pragu 0.5.
+
+Pri regresiji (BMI) scenarij **“Vsi se gibamo”** pokaže:
+
+* znižanje **povprečno napovedanega BMI za približno 0.34**,
+* MAE/RMSE ostaneta praktično podobna (rahlo višja), kar je pričakovano pri globalni simulaciji, ker primerjamo napovedi z nespremenjenimi dejanskimi vrednostmi.
+
+### Kako se je sigma stopnja izboljšala (Six Sigma PREJ/POTEM)
+
+**Klasifikacija (napake = napačne klasifikacije):**
+Največjo izboljšavo doseže scenarij **General_Health +1**:
+
+* **DPMO** se zmanjša iz **264,072** na **170,905**,
+* **sigma nivo** se poveča iz **0.631** na **0.951** (ΔSigma ≈ **+0.320**).
+  To pomeni občutno manj napak na milijon odločitev in boljši “proces” napovedovanja. Za ta glavni scenarij je bila sprememba napak tudi **statistično značilna** (McNemar p ≈ 0).
+
+**Regresija (napake = odstopanje nad toleranco):**
+Po spremembi se število “defects” rahlo zmanjša (−1042), DPMO se zniža za ~3374, sigma nivo pa se minimalno izboljša (ΔSigma ≈ +0.0097), kar pomeni majhno izboljšavo procesa glede na izbrano toleranco.
+
+### Priporočilo za implementacijo sprememb
+
+Priporočava **implementacijo sprememb predvsem tam, kjer je učinek procesno največji in operativno izvedljiv**:
+
+1. **Prioriteta 1: Programi za izboljšanje General_Health (preventiva + checkup + zgodnja obravnava)**
+
+   * ker daje največji učinek v simulacijah in največjo izboljšavo sigma nivoja (ΔSigma ≈ +0.320).
+   * v praksi to pomeni sistematično vodenje preventivnih pregledov, zgodnje prepoznavanje kroničnih težav in aktivno spremljanje rizičnih skupin.
+
+2. **Prioriteta 2: Diabetes preventiva in upravljanje**
+
+   * zmeren, a stabilen učinek (ΔSigma ≈ +0.065), visok procesni smisel (znan rizični faktor).
+
+3. **Podporno: zniževanje BMI/teže + spodbujanje gibanja**
+
+   * vpliv na klasifikacijo je pri pragu 0.5 manjši, vendar je ukrep dolgoročno smiseln in se v regresijskem primeru kaže kot znižanje povprečnega BMI (≈ −0.34), zato ga priporočava kot del celostnega programa zdravja.
+
+Skupno: modeli omogočajo **merljivo odločanje** (koga ciljati) in **kvantificiranje učinkov ukrepov** (kaj se izboljša in za koliko). Zato je smiselno spremembe uvajati postopno: najprej ukrepi z največjim vplivom (General_Health, Diabetes), nato razširitev na celostne programe (BMI/Exercise), ob sprotnem spremljanju KPI-jev in sigma metrik.
 

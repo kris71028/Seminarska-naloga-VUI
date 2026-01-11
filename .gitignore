@@ -1,0 +1,8 @@
+# model artifacts
+*.joblib
+*.pkl
+*.ckpt
+*.h5
+
+# streamlit models folder
+streamlit_app/models/

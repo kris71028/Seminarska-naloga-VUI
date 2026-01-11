@@ -1,0 +1,19 @@
+X,Tip X,Test,Statistika,p,Mera učinka,Učinek,Opomba,N_No,N_Yes,No_mean,Yes_mean,No_median,Yes_median,p_FDR
+General_Health,kategorialna,χ² test neodvisnosti,19234.33413703971,0.0,Cramérjev V,0.24955252185911866,"dof=4, min pričakovane=916.117",283883,24971,,,,,0.0
+Age_Category,kategorialna,χ² test neodvisnosti,18035.930858650143,0.0,Cramérjev V,0.2416532641197661,"dof=12, min pričakovane=1252.698",283883,24971,,,,,0.0
+Diabetes,kategorialna,χ² test neodvisnosti,10418.54963091488,0.0,Cramérjev V,0.18366525973138742,"dof=3, min pričakovane=213.930",283883,24971,,,,,0.0
+Arthritis,kategorialna,χ² test neodvisnosti,7316.548748693833,0.0,Cramérjev V,0.15391343123261925,"dof=1, min pričakovane=8171.641",283883,24971,,,,,0.0
+Alcohol_Consumption,numerična,Mann–Whitney U,4082698007.5,0.0,Rank-biserial r,-0.15186592708889424,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,5.185298168611717,4.085338993232149,1.0,0.0,0.0
+Smoking_History,kategorialna,χ² test neodvisnosti,3588.9409557116187,0.0,Cramérjev V,0.10779696699567606,"dof=1, min pričakovane=10127.657",283883,24971,,,,,0.0
+Exercise,kategorialna,χ² test neodvisnosti,2867.0008888168927,0.0,Cramérjev V,0.09634680083962813,"dof=1, min pričakovane=5616.927",283883,24971,,,,,0.0
+Checkup,kategorialna,χ² test neodvisnosti,2731.043538247254,0.0,Cramérjev V,0.09403460328823889,"dof=4, min pričakovane=113.757",283883,24971,,,,,0.0
+Other_Cancer,kategorialna,χ² test neodvisnosti,2636.183968988429,0.0,Cramérjev V,0.09238708026537716,"dof=1, min pričakovane=2415.651",283883,24971,,,,,0.0
+Skin_Cancer,kategorialna,χ² test neodvisnosti,2549.1108400473936,0.0,Cramérjev V,0.09084849658745216,"dof=1, min pričakovane=2425.030",283883,24971,,,,,0.0
+Sex,kategorialna,χ² test neodvisnosti,1627.6521111132456,0.0,Cramérjev V,0.0725945767922343,"dof=1, min pričakovane=12019.073",283883,24971,,,,,0.0
+Weight_(kg),numerična,Mann–Whitney U,3157822970.5,2.6956939513428225e-180,Rank-biserial r,0.10907231521517624,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,83.29826185435552,86.88998598374113,81.19,83.91,4.043540927014234e-180
+BMI,numerična,Mann–Whitney U,3166297863.5,1.9348980704920644e-172,Rank-biserial r,0.10668126388968235,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,28.543676021459547,29.564504825597695,27.44,28.55,2.6790896360659355e-172
+Depression,kategorialna,χ² test neodvisnosti,326.7458233205152,4.915434134500315e-73,Cramérjev V,0.03252583145998579,"dof=1, min pričakovane=5004.727",283883,24971,,,,,6.31984388721469e-73
+Green_Vegetables_Consumption,numerična,Mann–Whitney U,3748407442.0,3.777408343216292e-52,Rank-biserial r,-0.05755135583249249,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,15.216878080054107,13.900404469184254,12.0,10.0,4.532890011859551e-52
+FriedPotato_Consumption,numerična,Mann–Whitney U,3720298991.5,1.8633472341292425e-39,Rank-biserial r,-0.04962101997744339,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,6.320103704695244,6.02959432942213,4.0,4.0,2.0962656383953978e-39
+Fruit_Consumption,numerična,Mann–Whitney U,3714264712.0,2.3590727367213727e-37,Rank-biserial r,-0.047918547510017895,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,29.983158554756713,28.15313763966201,30.0,30.0,2.4978417212343946e-37
+Height_(cm),numerična,Mann–Whitney U,3389217312.0,1.0699053194001058e-30,Rank-biserial r,0.04378821700232993,"Normalnost ni OK (p=0.000, 0.000) → neparametrični test.",283883,24971,170.5653667179789,171.18233150454526,170.0,173.0,1.0699053194001058e-30
