@@ -8,6 +8,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import KFold, cross_val_score
 import numpy as np
 
+global_random_state = 100
+
 important_features = [
     "Age_Category", "Sex", "Exercise", "Diabetes", "Arthritis", "General_Health"
 ]
@@ -29,17 +31,15 @@ def run_linear(df, features=all_features):
     X = X.dropna()
     y = y.loc[X.index]
 
-    # Keep y in raw units
-    # Optionally scale X if you want comparable coefficients
     scaler_X = StandardScaler()
     X_std = pd.DataFrame(scaler_X.fit_transform(X), columns=X.columns, index=X.index)
 
     X_std = sm.add_constant(X_std)
 
-    model = sm.OLS(y, X_std).fit()  # fit on raw y
+    model = sm.OLS(y, X_std).fit()
     y_pred = model.predict(X_std)
 
-    rmse = mean_squared_error(y, y_pred)  # raw units
+    rmse = mean_squared_error(y, y_pred)
     r2 = model.rsquared
 
     summary_df = pd.DataFrame({
@@ -52,7 +52,6 @@ def run_linear(df, features=all_features):
     return model, highlight_linear_importance(summary_df), rmse, None, r2
 
 
-
 def highlight_linear_importance(summary_df,
                                 beta_threshold=0.1,
                                 t_threshold=2.0,
@@ -61,12 +60,10 @@ def highlight_linear_importance(summary_df,
     def highlight_row(row):
         color = [''] * len(row)
 
-        # Strong effect size
         if row["Feature"] != "const" and abs(row["Std_Coefficient"]) >= beta_threshold:
             color[row.index.get_loc("Std_Coefficient")] = \
                 'background-color: #90EE90; font-weight:bold'
 
-        # Insignificant
         if abs(row["t_value"]) < t_threshold:
             color[row.index.get_loc("t_value")] = \
                 'background-color: #ff4d4d; color:white'
@@ -90,17 +87,16 @@ def run_xgboost(df, test_size=0.2,
     y = df.loc[X.index, target_feature]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size
+        X, y, test_size=test_size, random_state=global_random_state
     )
 
     model = xgb.XGBRegressor(
         n_estimators=n_estimators,
-        max_depth=max_depth
+        max_depth=max_depth, random_state=global_random_state
     )
 
     model.fit(X_train, y_train)
 
-    # Feature importance
     importance_df = pd.DataFrame({
         "Feature": features,
         "Importance": model.feature_importances_
@@ -108,7 +104,7 @@ def run_xgboost(df, test_size=0.2,
 
     importance_df = importance_df.sort_values("Importance", ascending=False).reset_index(drop=True)
     importance_df = highlight_xgb_importance(importance_df)
-    # Evaluation
+
     y_pred = model.predict(X_test)
     rmse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
@@ -131,60 +127,23 @@ from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-# -----------------------------
-# RANDOM FOREST
-# -----------------------------
 def run_random_forest(df, test_size=0.2, n_estimators=50, max_depth=None, features = all_features):
 
     X = df[features].dropna()
     y = df.loc[X.index, target_feature]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size
+        X, y, test_size=test_size, random_state=global_random_state
     )
 
     model = RandomForestRegressor(
         n_estimators=n_estimators,
         max_depth=max_depth,
-        n_jobs=-1
+        n_jobs=-1,
+        random_state=global_random_state
     )
     model.fit(X_train, y_train)
 
-    # Feature importance
-    importance_df = pd.DataFrame({
-        "Feature": features,
-        "Importance": model.feature_importances_
-    }).sort_values("Importance", ascending=False).reset_index(drop=True)
-
-    importance_df = highlight_xgb_importance(importance_df)  # reuse highlight function
-
-    # Evaluation
-    y_pred = model.predict(X_test)
-    rmse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
-    rmse_mean, rmse_std = cv_rmse(model, X, y)
-    return model, importance_df, rmse_mean, rmse_std, r2
-
-# -----------------------------
-# GRADIENT BOOSTING
-# -----------------------------
-def run_gradient_boosting(df, test_size=0.2, n_estimators=50, max_depth=3, features=all_features):
-
-    X = df[features].dropna()
-    y = df.loc[X.index, target_feature]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size
-    )
-
-    model = GradientBoostingRegressor(
-        n_estimators=n_estimators,
-        max_depth=max_depth
-    )
-    model.fit(X_train, y_train)
-
-    # Feature importance
     importance_df = pd.DataFrame({
         "Feature": features,
         "Importance": model.feature_importances_
@@ -192,7 +151,6 @@ def run_gradient_boosting(df, test_size=0.2, n_estimators=50, max_depth=3, featu
 
     importance_df = highlight_xgb_importance(importance_df)
 
-    # Evaluation
     y_pred = model.predict(X_test)
     rmse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
@@ -200,9 +158,35 @@ def run_gradient_boosting(df, test_size=0.2, n_estimators=50, max_depth=3, featu
     rmse_mean, rmse_std = cv_rmse(model, X, y)
     return model, importance_df, rmse_mean, rmse_std, r2
 
-# -----------------------------
-# RIDGE REGRESSION
-# -----------------------------
+def run_gradient_boosting(df, test_size=0.2, n_estimators=50, max_depth=3, features=all_features):
+
+    X = df[features].dropna()
+    y = df.loc[X.index, target_feature]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=global_random_state
+    )
+
+    model = GradientBoostingRegressor(
+        n_estimators=n_estimators,
+        max_depth=max_depth, random_state=global_random_state
+    )
+    model.fit(X_train, y_train)
+
+    importance_df = pd.DataFrame({
+        "Feature": features,
+        "Importance": model.feature_importances_
+    }).sort_values("Importance", ascending=False).reset_index(drop=True)
+
+    importance_df = highlight_xgb_importance(importance_df)
+
+    y_pred = model.predict(X_test)
+    rmse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    rmse_mean, rmse_std = cv_rmse(model, X, y)
+    return model, importance_df, rmse_mean, rmse_std, r2
+
 def run_ridge(df, alpha=1.0, features=all_features):
     X = df[features]
     y = df[target_feature]
@@ -210,12 +194,11 @@ def run_ridge(df, alpha=1.0, features=all_features):
     X = X.dropna()
     y = y.loc[X.index]
 
-    # Scale X only
     scaler_X = StandardScaler()
     X_std = pd.DataFrame(scaler_X.fit_transform(X), columns=X.columns, index=X.index)
 
     model = Ridge(alpha=alpha)
-    model.fit(X_std, y)  # fit on raw y
+    model.fit(X_std, y)
     y_pred = model.predict(X_std)
 
     rmse = mean_squared_error(y, y_pred)
@@ -226,7 +209,6 @@ def run_ridge(df, alpha=1.0, features=all_features):
         "Std_Coefficient": model.coef_
     })
 
-    # Highlight strong coefficients (>0.1)
     def highlight_ridge(row, beta_threshold=0.1):
         color = [''] * len(row)
         if abs(row["Std_Coefficient"]) >= beta_threshold:
@@ -239,25 +221,26 @@ def run_ridge(df, alpha=1.0, features=all_features):
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.metrics import mean_squared_error, make_scorer
 
-rmse_scorer = make_scorer(
-    mean_squared_error,
-    greater_is_better=False
-)
-
-def cv_rmse(model, X, y, n_splits=2, random_state=42):
-    kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
-    scores = cross_val_score(model, X, y, cv=kf, scoring=rmse_scorer)
-    rmse_scores = -scores  # sklearn returns negative
+def cv_rmse(model, X, y, n_splits=5):
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=global_random_state)
+    scores = cross_val_score(
+        model,
+        X,
+        y,
+        cv=kf,
+        scoring="neg_root_mean_squared_error"
+    )
+    rmse_scores = -scores
     return rmse_scores.mean(), rmse_scores.std()
 
-def cv_rmse_linear(df, features, n_splits=3):
+def cv_rmse_linear(df, features, n_splits=5):
     X = df[features].dropna()
     y = df.loc[X.index, target_feature]
 
     scaler = StandardScaler()
     X_std = scaler.fit_transform(X)
 
-    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=global_random_state)
     rmses = []
 
     for train_idx, test_idx in kf.split(X_std):
@@ -284,7 +267,6 @@ def compare_models(df, features=None):
 
     comparison = []
 
-    # ---------------- Linear Regression (no saving) ----------------
     rmse_mean, rmse_std = cv_rmse_linear(df, features)
     linear_model, _, _, _, r2 = run_linear(df, features)
     comparison.append([
@@ -294,7 +276,6 @@ def compare_models(df, features=None):
         "-"
     ])
 
-    # ---------------- Ridge Regression (SAVE) ----------------
     X = df[features].dropna()
     y = df.loc[X.index, target_feature]
 
@@ -316,21 +297,19 @@ def compare_models(df, features=None):
         "alpha=1.0 [SAVED]"
     ])
 
-    # ---------------- Random Forest (not saved) ----------------
     rf_model, _, rmse_mean, rmse_std, r2 = run_random_forest(
-        df, n_estimators=50, max_depth=3, features=features
+        df, n_estimators=100, max_depth=5, features=features
     )
 
     comparison.append([
         "Random Forest",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        "n_estimators=50, max_depth=3"
+        "n_estimators=100, max_depth=5"
     ])
 
-    # ---------------- Gradient Boosting (SAVE) ----------------
     gb_model, _, rmse_mean, rmse_std, r2 = run_gradient_boosting(
-        df, n_estimators=50, max_depth=3, features=features
+        df, n_estimators=100, max_depth=5, features=features
     )
 
     dump(gb_model, f"{save_dir}/gradient_boosting_model.joblib")
@@ -339,12 +318,11 @@ def compare_models(df, features=None):
         "Gradient Boosting",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        "n_estimators=50, max_depth=3 [SAVED]"
+        "n_estimators=100, max_depth=5 [SAVED]"
     ])
 
-    # ---------------- XGBoost (SAVE) ----------------
     xgb_model, _, rmse_mean, rmse_std, r2 = run_xgboost(
-        df, n_estimators=100, max_depth=5, features=features
+        df, n_estimators=200, max_depth=6, features=features
     )
 
     dump(xgb_model, f"{save_dir}/xgboost_model.joblib")
@@ -353,10 +331,9 @@ def compare_models(df, features=None):
         "XGBoost",
         f"{rmse_mean:.3f} ± {rmse_std:.3f}",
         r2,
-        "n_estimators=100, max_depth=5 [SAVED]"
+        "n_estimators=200, max_depth=6 [SAVED]"
     ])
 
-    # ---------------- Create table ----------------
     df_comparison = pd.DataFrame(
         comparison,
         columns=["Model", "RMSE (CV mean ± std)", "R²", "Parameters"]
@@ -376,6 +353,59 @@ def compare_models(df, features=None):
     }
 
     return df_comparison, models
+
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+
+def evaluate_top_models_on_test_set(df, models_dict,features=all_features):
+    test_size=0.2
+    top_n = 3
+    X = df[features].dropna()
+    y = df.loc[X.index, target_feature]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=global_random_state
+    )
+
+    results = []
+
+    selected_models = list(models_dict.items())[:top_n]
+
+    for model_name, model in selected_models:
+
+        if model_name == "ridge":
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+
+        elif model_name == "linear":
+            scaler = StandardScaler()
+            X_train_std = scaler.fit_transform(X_train)
+            X_test_std = scaler.transform(X_test)
+
+            X_train_std = sm.add_constant(X_train_std)
+            X_test_std = sm.add_constant(X_test_std)
+
+            model = sm.OLS(y_train, X_train_std).fit()
+            y_pred = model.predict(X_test_std)
+
+        else:
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+
+        results.append({
+            "Model": model_name,
+            "RMSE (test)": rmse,
+            "MAE (test)": mae,
+            "R² (test)": r2
+        })
+
+    return pd.DataFrame(results).sort_values("RMSE (test)")
 
 
 def spearman_correlation(df, features):
@@ -427,7 +457,6 @@ def mann_whitney_u_correlation(df, features):
         group0 = subset[subset[f] == 0]["BMI"]
         group1 = subset[subset[f] == 1]["BMI"]
 
-        # Skip if one group is empty
         if len(group0) == 0 or len(group1) == 0:
             continue
 
@@ -517,26 +546,6 @@ def plot_correlation(df):
 
 import scipy.stats as stats
 def check_normality(df, columns=None, plot=False, alpha=0.05):
-    """
-    Checks normality for selected columns (numeric or categorical with >2 levels).
-    Ignores binary columns automatically.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe with preprocessed columns.
-    columns : list, optional
-        List of columns to check. If None, all columns are checked.
-    plot : bool
-        Whether to show Q–Q plots.
-    alpha : float
-        Significance level for Shapiro-Wilk.
-
-    Returns
-    -------
-    pd.DataFrame
-        Table with Variable, Shapiro_p, Normal (YES/NO), N_unique
-    """
     results = []
 
     if columns is None:
@@ -545,11 +554,9 @@ def check_normality(df, columns=None, plot=False, alpha=0.05):
     for col in columns:
         data = df[col].dropna()
 
-        # Skip binary columns
         if data.nunique() <= 2:
             continue
 
-        # Ensure numeric type
         try:
             data_numeric = pd.to_numeric(data)
             data_numeric = data_numeric.sample(n=5000)
@@ -589,15 +596,12 @@ def make_everyone_exercise(df, model, important_features, tolerance=2.0):
     df_test = df[model.get_booster().feature_names].copy()
     y_true = df["BMI"].copy()
 
-    # Copy and apply global change
     df_test_modified = df_test.copy()
     df_test_modified["Exercise"] = 1
 
-    # Predictions
     y_pred_before = model.predict(df_test)
     y_pred_after  = model.predict(df_test_modified)
 
-    # --- Regression metrics ---
     mae_before = mean_absolute_error(y_true, y_pred_before)
     mae_after  = mean_absolute_error(y_true, y_pred_after)
     rmse_before = np.sqrt(mean_squared_error(y_true, y_pred_before))
@@ -618,7 +622,6 @@ def make_everyone_exercise(df, model, important_features, tolerance=2.0):
     else:
         print(f"\nPredicted BMI increased by {mean_bmi_diff:.2f}.")
 
-    # --- Six Sigma Analysis ---
     errors_before = np.abs(y_pred_before - y_true)
     errors_after  = np.abs(y_pred_after - y_true)
 
@@ -642,6 +645,5 @@ def make_everyone_exercise(df, model, important_features, tolerance=2.0):
         "Difference": [defects_after - defects_before, DPMO_after - DPMO_before, sigma_after - sigma_before]
     })
 
-    # Wilcoxon test
     stat, p_value = wilcoxon(errors_before, errors_after)
     return metrics_table, six_sigma_table, p_value
