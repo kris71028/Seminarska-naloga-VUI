@@ -354,19 +354,24 @@ Zgrajenih je 5 regresijskih modelov z nastavljenimi hiperparametri:
 Za regresijo poročava:
 - **R²**
 - **RMSE**
-- **MAE**
-- **MAPE**
+- **MAE** (pri testiranju)
 
 ### 2.3 Primerjava modelov (validacijska množica)
-Model | Tip | Parametri | Metrike (mean±SD čez CV) | AIC/BIC | Komentar | Izbor
----|---|---|---|---|---|---
-Linear Regression | OLS | – | RMSE, R² | – | interpretabilen baseline |  
-Ridge | Ridge | alpha=1.0 | RMSE, R² | – | stabilen linearni model | **DA (TOP 3)**
-Gradient Boosting | GBR | n_estimators=50, max_depth=3 | RMSE, R² | – | dobro lovi nelinearnosti | **DA (TOP 3)**
-XGBoost | XGB | n_estimators=100, max_depth=5 | RMSE, R² | – | najboljša napovedna moč | **DA (TOP 3)**
-Random Forest | RF | n_estimators=50, max_depth=3 | RMSE, R² | – | baseline drevesni ensemble |
+| Model | RMSE (CV mean ± std) | R² | Parameters |
+|-------|----------------------|----|------------|
+| 3 Gradient Boosting | 5.953 ± 0.039 | 0.155221 | n_estimators=100, max_depth=5 [SAVED] |
+| 4 XGBoost | 5.990 ± 0.036 | 0.146536 | n_estimators=200, max_depth=6 [SAVED] |
+| 2 Random Forest | 6.042 ± 0.046 | 0.127633 | n_estimators=100, max_depth=5 |
+| 1 Ridge Regression | 6.129 ± 0.042 | 0.105729 | alpha=1.0 [SAVED] |
+| 0 Linear Regression | 37.569 ± 0.512 | 0.105729 | - |
 
-## 3. Izbor najboljših modelov in testiranje (REGRESIJA)
+## 3. Izbor najboljših modelov in testiranje
+| Model               | RMSE      | MAE       | R²        |
+|--------------------|-----------|-----------|-----------|
+| Gradient Boosting  | 5.9968    | 4.4333    | 0.1552    |
+| XGBoost            | 6.0275    | 4.4498    | 0.1465    |
+| Ridge Regression   | 6.1797    | 4.5976    | 0.1029    |
+
 Na podlagi validacijskih rezultatov izbereva **TOP 3 regresijske modele**:
 - **XGBoost**
 - **Gradient Boosting**
@@ -664,4 +669,5 @@ Priporočava **implementacijo sprememb predvsem tam, kjer je učinek procesno na
    * vpliv na klasifikacijo je pri pragu 0.5 manjši, vendar je ukrep dolgoročno smiseln in se v regresijskem primeru kaže kot znižanje povprečnega BMI (≈ −0.34), zato ga priporočava kot del celostnega programa zdravja.
 
 Skupno: modeli omogočajo **merljivo odločanje** (koga ciljati) in **kvantificiranje učinkov ukrepov** (kaj se izboljša in za koliko). Zato je smiselno spremembe uvajati postopno: najprej ukrepi z največjim vplivom (General_Health, Diabetes), nato razširitev na celostne programe (BMI/Exercise), ob sprotnem spremljanju KPI-jev in sigma metrik.
+
 
