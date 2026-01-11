@@ -307,11 +307,11 @@ V okviru bivariatne analize preveriva povezavo **vsake neodvisne spremenljivke (
 
 ### Uporabljeni testi (izbor po tipu spremenljivk)
 - **Numerične / ordinalne spremenljivke:**  
-  - **Spearmanova korelacija (ρ)** in **Pearsonova korelacija (r)** (za oceno monotone / linearne povezave). :contentReference[oaicite:0]{index=0}
+  - **Spearmanova korelacija (ρ)** in **Pearsonova korelacija (r)** (za oceno monotone / linearne povezave).
 - **Binarne spremenljivke (0/1):**
-  - **Mann–Whitney U test** (primerjava porazdelitev BMI med skupinama 0 vs 1). :contentReference[oaicite:1]{index=1}
+  - **Mann–Whitney U test** (primerjava porazdelitev BMI med skupinama 0 vs 1).
 - **Normalnost (diagnostika):**
-  - Shapiro–Wilk test (na vzorcu do 5000 vrednosti, zaradi velikega N) + po potrebi Q–Q plot. 
+  - Shapiro–Wilk test (na vzorcu 5000 vrednosti, zaradi velikega N) + po potrebi Q–Q plot. 
 
 ### Grafični prikazi
 Za vizualno interpretacijo:
@@ -322,40 +322,25 @@ Za vizualno interpretacijo:
 ## 1.5 Izbor spremenljivk (Feature Selection – regresija)
 
 V kodi sta definirana:
-- **širši nabor kandidatov (`all_features`)**:  
-  `Age_Category, Sex, Smoking_History, Exercise, Alcohol_Consumption, Fruit_Consumption, Green_Vegetables_Consumption, FriedPotato_Consumption, Diabetes, Depression, Arthritis, Checkup, Heart_Disease` :contentReference[oaicite:4]{index=4}
-- **ožji “interpretabilen” nabor (`important_features`)**:  
-  `Age_Category, Sex, Exercise, Diabetes, Arthritis, General_Health` :contentReference[oaicite:5]{index=5}
+- za pomembne spremenljivke so se izkazali `Age_Category, Sex, Exercise, Diabetes, Arthritis, General_Health`
 
 Končno množico spremenljivk za regresijske modele določiva na podlagi kombinacije:
 - bivariatnih rezultatov (korelacije / Mann–Whitney),
 - pomembnosti značilk pri drevesnih modelih (feature importance),
 - interpretabilnosti in procesne smiselnosti (kaj lahko dejansko optimiziramo v praksi). 
 
-
 ## 2. DRUGI DEL: Gradnja in ocenjevanje modelov (REGRESIJA: BMI)
 
 ### 2.1 Priprava podatkov za modeliranje
-- Ciljna spremenljivka: **BMI**. :contentReference[oaicite:7]{index=7}
-- Podatke razdeliva na:
-  - **učno množico (80%)**
-  - **testno množico (20%)**
-- Ker podatki niso časovno odvisni, uporabiva naključno delitev. 
+- Podatke naključno razdeliva 80% na učno, 20% na testno množico.
 
 ### 2.2 Gradnja modelov (vsaj 5)
-Zgrajenih je 5 regresijskih modelov z nastavljenimi hiperparametri:
-1. **Linear Regression (OLS / statsmodels)** – linearni model. :contentReference[oaicite:10]{index=10}  
-2. **Ridge Regression** – `alpha=1.0`, z **StandardScaler** v pipeline.   
-3. **Random Forest Regressor** – `n_estimators=50`, `max_depth=3`. :contentReference[oaicite:12]{index=12}  
-4. **Gradient Boosting Regressor** – `n_estimators=50`, `max_depth=3`.   
-5. **XGBoost Regressor** – `n_estimators=100`, `max_depth=5`.   
+Primerjali smo linearno regresijo, Ridge Regression, Random Forest, Gradient Boosting, XGBoosting.
 
 ### 2.3 Metrike napovedne uspešnosti (CV)
 Za regresijo poročava:
 - **R²**
 - **RMSE**
-- **MAE**
-- **MAPE**
 
 ### 2.3 Primerjava modelov (validacijska množica)
 Model | Tip | Parametri | Metrike (mean±SD čez CV) | AIC/BIC | Komentar | Izbor
@@ -367,15 +352,7 @@ XGBoost | XGB | n_estimators=100, max_depth=5 | RMSE, R² | – | najboljša nap
 Random Forest | RF | n_estimators=50, max_depth=3 | RMSE, R² | – | baseline drevesni ensemble |
 
 ## 3. Izbor najboljših modelov in testiranje (REGRESIJA)
-Na podlagi validacijskih rezultatov izbereva **TOP 3 regresijske modele**:
-- **XGBoost**
-- **Gradient Boosting**
-- **Ridge Regression** 
-
-Modele shraniva in jih uporabiva tudi v aplikaciji:
-- `models/ridge_model.joblib`
-- `models/gradient_boosting_model.joblib`
-- `models/xgboost_model.joblib` 
+Najboljši regresijski modeli so bili XGBoost, Gradient Boosting, Ridge Regression, te uporabiva v aplikaciji.
 
 ---
 ## 4. Interaktivna aplikacija (Simulacija in optimizacija)
@@ -664,4 +641,5 @@ Priporočava **implementacijo sprememb predvsem tam, kjer je učinek procesno na
    * vpliv na klasifikacijo je pri pragu 0.5 manjši, vendar je ukrep dolgoročno smiseln in se v regresijskem primeru kaže kot znižanje povprečnega BMI (≈ −0.34), zato ga priporočava kot del celostnega programa zdravja.
 
 Skupno: modeli omogočajo **merljivo odločanje** (koga ciljati) in **kvantificiranje učinkov ukrepov** (kaj se izboljša in za koliko). Zato je smiselno spremembe uvajati postopno: najprej ukrepi z največjim vplivom (General_Health, Diabetes), nato razširitev na celostne programe (BMI/Exercise), ob sprotnem spremljanju KPI-jev in sigma metrik.
+
 
