@@ -553,3 +553,115 @@ V regresijskem primeru sva simulirala scenarij “Vsi se gibamo”, kjer sva za 
 Kratek komentar učinkov:
 - Povprečni napovedani BMI se pri scenariju “vsi telovadijo” zniža za približno 0.34.
 - MAE/RMSE ostaneta praktično podobna (rahlo višja), kar je pričakovano pri globalni simulaciji, ker primerjamo napovedi z nespremenjenimi dejanskimi vrednostmi.
+
+---
+# 7. Six Sigma analiza – PREJ in POTEM
+
+### 7.1 Klasifikacija (Heart_Disease) – napake = napačne klasifikacije
+V klasifikacijskem primeru napako (defect) definiramo kot napačno klasifikacijo (model napove Yes/No narobe). Ker ima vsak zapis eno odločitev, vzamemo 1 opportunity na zapis. Na tej osnovi izračunamo:
+- DPMO = (število napak / (št. zapisov × 1)) × 1,000,000
+- Sigma nivo iz izkoristka (yield = 1 − DPMO/1e6)
+Spodnja tabela prikazuje stanje PREJ in POTEM za izbrane scenarije.
+
+| Model              | Scenarij             | DPMO PREJ | Sigma PREJ | DPMO POTEM | Sigma POTEM | Izboljšava (ΔSigma) |
+| ------------------ | -------------------- | --------: | ---------: | ---------: | ----------: | ------------------: |
+| LogisticRegression | General_Health +1    |    264072 |   0.630841 |     170905 |    0.950593 |        **0.319752** |
+| LogisticRegression | Diabetes izboljšanje |    264072 |   0.630841 |     243172 |    0.696134 |            0.065293 |
+| LogisticRegression | BMI -2               |    264072 |   0.630841 |     259863 |    0.643768 |            0.012926 |
+| LogisticRegression | Teža -5%             |    264072 |   0.630841 |     267019 |    0.621855 |           -0.008986 |
+
+Interpretacija izboljšave procesa:
+
+- Največjo izboljšavo doseže scenarij “General_Health +1”, kjer se DPMO zmanjša iz 264072 na 170905, sigma nivo pa se poveča iz 0.631 na 0.951 (ΔSigma ≈ +0.320). To pomeni opazno manj napačnih klasifikacij na milijon odločitev in s tem boljši “proces” odločanja modela.
+- Scenarij “Diabetes izboljšanje” prinese zmerno izboljšavo (ΔSigma ≈ +0.065).
+- Scenarija “BMI -2” in “Teža -5%” imata zelo majhen oziroma negativen učinek na sigma nivo (pri teži -5% se DPMO celo rahlo poveča).
+Statistična in procesna pomembnost:
+- Za glavni scenarij (General_Health +1) je McNemar test pokazal p ≈ 0, kar pomeni, da je razlika v napakah statistično značilna.
+- Procesno je sprememba smiselna predvsem tam, kjer je ΔSigma dovolj velik (tukaj je to General_Health +1). Pri minimalnih ΔSigma (BMI -2) gre za majhno izboljšavo, ki je v praksi manj prepričljiva.
+Ali upravičuje implementacijo v praksi?
+- Scenarij General_Health +1 kaže največji potencial, vendar predstavlja “globalno izboljšanje” splošnega zdravja, kar v praksi pomeni potrebo po širših preventivnih programih (checkup, zgodnja obravnava kroničnih težav, vodenje rizičnih skupin). Glede na velik ΔSigma je tak ukrep iz vidika modela najbolj upravičen.
+- Pri drugih scenarijih je učinek manjši; implementacija je bolj smiselna kot dopolnilo, ne kot glavni nosilec optimizacije.
+
+
+### 7.2 Regresija (BMI) – napake = odstopanje nad toleranco
+V regresijskem primeru napako (defect) definiramo preko tolerance: zapis je “defekten”, če je absolutna napaka |BMI − napoved| večja od izbrane tolerance. Na tej osnovi nato izračunamo DPMO in sigma nivo pred in po spremembi.
+
+| Metric      |        Before |         After |   Difference |
+| ----------- | ------------: | ------------: | -----------: |
+| Defects     | 215810.000000 | 214768.000000 | -1042.000000 |
+| DPMO        | 698744.390553 | 695370.628193 | -3373.762360 |
+| Sigma Level |     -0.520793 |     -0.511132 |     0.009661 |
+
+
+## 8. Končni povzetek (Executive Summary)
+
+V seminarski nalogi sva obravnavala problem **napovedovanja srčno-žilnega tveganja** in hkrati pripravila osnovo za **optimizacijo procesa** z uporabo podatkovno-podprte simulacije “kaj-če”. Uporabila sva javno dostopno bazo *Cardiovascular Diseases Risk Prediction Dataset* (308,854 zapisov × 19 spremenljivk), ki vsebuje anketne (samoporočane) podatke o zdravju in življenjskem slogu odraslih ter ciljno spremenljivko **Heart_Disease (Yes/No)**. Poleg klasifikacije sva za prikaz regresijskega pristopa modelirala še **BMI** kot numerični izhod (regresijski primer).
+
+### Kaj je bil problem
+
+Ključni izziv je bil:
+
+1. zgraditi **zanesljiv napovedni model** za odkrivanje primerov z višjim tveganjem srčne bolezni (screening pristop), in
+2. preveriti, **katere spremembe vhodnih spremenljivk** (ukrepi) bi lahko procesno zmanjšale napovedano tveganje ter kako se to odrazi v **Six Sigma metrikah** (DPMO, sigma nivo).
+
+### Kateri modeli so najboljši in zakaj
+
+**Klasifikacija (Heart_Disease):** Med TOP3 modeli na testni množici izbereva **LogisticRegression (weighted)** kot najboljši kompromis, ker dosega:
+
+* **najvišji AUC = 0.816** in
+* **najvišjo občutljivost (Sensitivity) = 0.788**, kar je ključno pri odkrivanju pozitivnih primerov (želimo “ujeti” čim več oseb z boleznijo/tveganjem).
+
+**Regresija (BMI):** Kot najboljši model za napoved BMI izbereva **XGBoost**, ker v primerjavi uporabljenih regresijskih modelov dosega najboljšo napovedno moč (najnižji RMSE med TOP3) in je primeren za simulacije “kaj-če” na populacijskem nivoju.
+
+### Katere spremenljivke je smiselno optimizirati
+
+Iz bivariatne analize, izbora značilk in procesne interpretacije izstopajo spremenljivke, ki imajo močan vpliv in so hkrati **vsaj delno vplivljive**:
+
+* **General_Health** (splošno zdravje): najbolj izrazito povezano s srčno boleznijo; procesno pomeni potrebo po preventivi, checkup programih in zgodnji obravnavi kroničnih težav.
+* **Diabetes**: pomemben dejavnik tveganja; smiselni so programi preventive, nadzor glikemije in edukacija.
+* **BMI / Weight_(kg)**: neposredno povezano s tveganjem; optimizacija preko prehranskih in gibalnih intervencij.
+* **Exercise** (v regresiji): glavni praktični vzvod za zniževanje BMI (več gibanja → nižji BMI).
+* **Age_Category** in **Sex** sta pomembna, vendar **neoptimizabilna**; uporabljata se predvsem za segmentacijo in ciljanje ukrepov (kdo je prioriteten za preventivo).
+
+### Kakšni so učinki sprememb (simulacije “kaj-če”)
+
+Pri klasifikaciji (LogisticRegression weighted) se pri globalnih simulacijah najbolj izkaže scenarij:
+
+* **General_Health +1**, kjer se povprečno napovedano tveganje in število napovedanih pozitivnih primerov bistveno znižata; opazen učinek ima tudi **Diabetes izboljšanje**, medtem ko sta vpliva **BMI −2** in **Teža −5%** precej manjša pri pragu 0.5.
+
+Pri regresiji (BMI) scenarij **“Vsi se gibamo”** pokaže:
+
+* znižanje **povprečno napovedanega BMI za približno 0.34**,
+* MAE/RMSE ostaneta praktično podobna (rahlo višja), kar je pričakovano pri globalni simulaciji, ker primerjamo napovedi z nespremenjenimi dejanskimi vrednostmi.
+
+### Kako se je sigma stopnja izboljšala (Six Sigma PREJ/POTEM)
+
+**Klasifikacija (napake = napačne klasifikacije):**
+Največjo izboljšavo doseže scenarij **General_Health +1**:
+
+* **DPMO** se zmanjša iz **264,072** na **170,905**,
+* **sigma nivo** se poveča iz **0.631** na **0.951** (ΔSigma ≈ **+0.320**).
+  To pomeni občutno manj napak na milijon odločitev in boljši “proces” napovedovanja. Za ta glavni scenarij je bila sprememba napak tudi **statistično značilna** (McNemar p ≈ 0).
+
+**Regresija (napake = odstopanje nad toleranco):**
+Po spremembi se število “defects” rahlo zmanjša (−1042), DPMO se zniža za ~3374, sigma nivo pa se minimalno izboljša (ΔSigma ≈ +0.0097), kar pomeni majhno izboljšavo procesa glede na izbrano toleranco.
+
+### Priporočilo za implementacijo sprememb
+
+Priporočava **implementacijo sprememb predvsem tam, kjer je učinek procesno največji in operativno izvedljiv**:
+
+1. **Prioriteta 1: Programi za izboljšanje General_Health (preventiva + checkup + zgodnja obravnava)**
+
+   * ker daje največji učinek v simulacijah in največjo izboljšavo sigma nivoja (ΔSigma ≈ +0.320).
+   * v praksi to pomeni sistematično vodenje preventivnih pregledov, zgodnje prepoznavanje kroničnih težav in aktivno spremljanje rizičnih skupin.
+
+2. **Prioriteta 2: Diabetes preventiva in upravljanje**
+
+   * zmeren, a stabilen učinek (ΔSigma ≈ +0.065), visok procesni smisel (znan rizični faktor).
+
+3. **Podporno: zniževanje BMI/teže + spodbujanje gibanja**
+
+   * vpliv na klasifikacijo je pri pragu 0.5 manjši, vendar je ukrep dolgoročno smiseln in se v regresijskem primeru kaže kot znižanje povprečnega BMI (≈ −0.34), zato ga priporočava kot del celostnega programa zdravja.
+
+Skupno: modeli omogočajo **merljivo odločanje** (koga ciljati) in **kvantificiranje učinkov ukrepov** (kaj se izboljša in za koliko). Zato je smiselno spremembe uvajati postopno: najprej ukrepi z največjim vplivom (General_Health, Diabetes), nato razširitev na celostne programe (BMI/Exercise), ob sprotnem spremljanju KPI-jev in sigma metrik.
+
